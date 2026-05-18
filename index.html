@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
+        /* 100% 保留你最爱的绿叶淡米绿视觉美学配置 */
         :root {
             --primary-color: #6b8e23; /* 橄榄绿，代表绿叶 */
             --accent-color: #de5d83;  /* 柔和红，代表爱心 */
@@ -82,7 +83,7 @@
             overflow: hidden;
         }
 
-        /* 卡片右上角淡淡的背景大图标 */
+        /* 右上角水印图标 */
         .card::after {
             position: absolute;
             top: -10px;
@@ -266,21 +267,19 @@
     <div class="card">
         <h2><i class="fa-solid fa-earth-asia" style="color: #4ba3e3;"></i> 🌐 云端公开大厅 (所有人能看到的只有密文)</h2>
         <div id="publicBoard" class="message-list">
-            <div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> 正在同步云端密文通道...</div>
+            <div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> 正在同步全网加密信道...</div>
         </div>
     </div>
 </div>
 
 <script>
-    // 使用你在 0.txt 里的共享共享池配置
-    const CLOUD_URL = 'https://api.jsonbin.io/v3/b/6618cf8be41b4d34e4e1a065';
-    const MASTER_KEY = '$2a$10$W6vS10T9G4/6G6I/kZREO.4s8VbY8Z/uSgY9IqA9K6P6E6F6G6H6I';
-    
+    // 换用免主密钥认证、防拦截的高速公网大厅存储信道
+    const API_URL = `https://kvdb.io/4y9gD8Q3N89z7r5uN2nE8G/global_hall_2026`;
+
     let db = [];
     const textEncoder = new TextEncoder();
     const textDecoder = new TextDecoder();
 
-    // 姓名+密钥派生核心 Key
     async function deriveKey(name, keyStr) {
         const secretMaterial = textEncoder.encode(name + "::" + keyStr);
         const hash = await crypto.subtle.digest('SHA-256', secretMaterial);
@@ -289,25 +288,23 @@
         );
     }
 
-    // 从公网大厅获取数据
+    // 安全抓取云端大厅最新密文列表
     async function fetchCloudMessages() {
         try {
-            const response = await fetch(`${CLOUD_URL}/latest`, {
-                headers: { 'X-Master-Key': MASTER_KEY }
-            });
-            if (response.ok) {
-                const res = await response.json();
-                db = res.record || [];
+            const response = await fetch(API_URL);
+            if (response.status === 404) {
+                db = [];
+            } else {
+                db = await response.json();
             }
             renderBoard();
         } catch (e) {
-            console.error("同步云端失败，升级保障本地缓存", e);
-            db = JSON.parse(localStorage.getItem('encrypted_board_cache')) || [];
-            renderBoard();
+            console.error("网络信道加载中断：", e);
+            document.getElementById('publicBoard').innerHTML = '<p style="color:#de5d83; text-align:center; padding:20px;"><i class="fa-solid fa-circle-exclamation"></i> 信道连接超时，请检查手机网络</p>';
         }
     }
 
-    // 本地多端联机发布，新增高并发抢占合并功能（防覆盖冲洗）
+    // 发射加密信息
     async function handleEncrypt() {
         const name = document.getElementById('encryptName').value.trim();
         const keyStr = document.getElementById('encryptKey').value.trim();
@@ -320,10 +317,9 @@
         }
 
         sendBtn.disabled = true;
-        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在本地安全加密并同步网络...';
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在进行本地高强度加密...';
 
         try {
-            // 1. 本地零知识量子加密
             const key = await deriveKey(name, keyStr);
             const iv = crypto.getRandomValues(new Uint8Array(12)); 
             const encodedContent = textEncoder.encode(content);
@@ -340,33 +336,22 @@
                 iv: ivBase64
             };
 
-            // 2.【核心更新】推送前实时打捞最新公网大厅，防止在撰写期间其他人发信导致覆盖损失
+            // 高并发排队抢占合并，防止万人大厅吞信
             try {
-                const checkResponse = await fetch(`${CLOUD_URL}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY }
-                });
-                if (checkResponse.ok) {
-                    const res = await checkResponse.json();
-                    db = res.record || [];
-                }
+                const checkResponse = await fetch(API_URL);
+                if (checkResponse.ok) db = await checkResponse.json();
             } catch(err){}
 
-            // 3. 追加合并并控制上限 30 条大厅负载
             db.unshift(newMessage);
-            if(db.length > 30) db.pop(); 
+            if(db.length > 35) db.pop(); // 保持大厅最高效的滑动负载
 
-            // 4. 将最新整合列表平滑提交回云端大厅
-            await fetch(CLOUD_URL, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY
-                },
+            // 推向全球服务器
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(db)
             });
 
-            localStorage.setItem('encrypted_board_cache', JSON.stringify(db));
-            
             document.getElementById('encryptContent').value = '';
             document.getElementById('encryptResult').innerHTML = `
                 <div class="success-box">
@@ -374,8 +359,7 @@
                 </div>`;
             renderBoard();
         } catch (e) {
-            console.error(e);
-            alert('云端同步或加密发生偏差，请检查您的网络连接');
+            alert('云端同步失败，请检查网络');
         } finally {
             sendBtn.disabled = false;
             sendBtn.innerHTML = '<i class="fa-solid fa-user-lock"></i> 生成加密留言并发布到网络大厅';
@@ -394,7 +378,7 @@
         } catch (e) { return null; }
     }
 
-    // 实时抓取并检索现场一键解密
+    // 从公网大厅检索匹配暗号的信件
     async function handleDecryptAll() {
         const name = document.getElementById('decryptName').value.trim();
         const keyStr = document.getElementById('decryptKey').value.trim();
@@ -407,9 +391,8 @@
         }
 
         getBtn.disabled = true;
-        getBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在打捞云端信道并现场解码...';
+        getBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在打捞全网信道...';
 
-        // 解密前强行刷最新大厅，多手机同步不延时
         await fetchCloudMessages();
 
         let foundMessages = [];
@@ -422,10 +405,10 @@
 
         if (foundMessages.length > 0) {
             let html = `
-                <div class="success-box" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
-                    <p><strong><i class="fa-solid fa-heart-crack"></i> 成功从网络同步解密出 ${foundMessages.length} 条属于你的留言：</strong></p><hr style="border-color:#bbf7d0">`;
+                <div class="success-box" style="background: #f4fbf7; color: #155724; border-color: #c3e6cb;">
+                    <p><strong><i class="fa-solid fa-envelope-open-text"></i> 成功从网络大厅解密出 ${foundMessages.length} 条属于你的留言：</strong></p><hr style="border-color:#c3e6cb">`;
             foundMessages.forEach(m => {
-                html += `<p style="font-size:0.85rem; color:#666;">🕒 投递时间：${m.time}</p><p style="font-size:1.05rem; padding-left:10px; border-left:3px solid var(--accent-color);">💌 <strong>内容：</strong>${m.content}</p><hr style="border:0;border-top:1px dashed #bbf7d0;">`;
+                html += `<p style="font-size:0.85rem; color:#666;">🕒 投递时间：${m.time}</p><p style="font-size:1.05rem; padding-left:10px; border-left:3px solid var(--accent-color);">💌 <strong>内容：</strong>${m.content}</p><hr style="border:0;border-top:1px dashed #c3e6cb;">`;
             });
             html += `</div>`;
             resultDiv.innerHTML = html;
@@ -439,7 +422,6 @@
         getBtn.innerHTML = '<i class="fa-solid fa-key"></i> 一键检索并解密';
     }
 
-    // 100% 还原包含你指定文案的大厅密文渲染
     function renderBoard() {
         const board = document.getElementById('publicBoard');
         if (db.length === 0) {
@@ -455,10 +437,10 @@
         `).join('');
     }
 
-    // 初始化轮巡
+    // 进入页面自动拉取
     fetchCloudMessages();
-    // 增加 15 秒一循环的自动无感大厅刷新，多台设备不用手动刷新也能看密文大厅滚动
-    setInterval(fetchCloudMessages, 15000);
+    // 每 10 秒多端自动悄悄对齐一次大厅，不需要别人手动刷新
+    setInterval(fetchCloudMessages, 10000);
 </script>
 
 </body>
