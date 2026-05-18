@@ -12,9 +12,9 @@
 
     <style>
         :root {
-            --primary-color: #6b8e23; /* 橄榄绿，代表绿叶 */
-            --accent-color: #de5d83;  /* 柔和红，代表爱心 */
-            --bg-color: #f4f6f0;      /* 极简淡米绿背景 */
+            --primary-color: #6b8e23;
+            --accent-color: #de5d83;
+            --bg-color: #f4f6f0;
             --card-bg: #ffffff;
             --text-color: #2f3e46;
         }
@@ -59,7 +59,6 @@
             margin: 0;
         }
 
-        /* 动画：漂浮的和平鸽 */
         .illustration-pigeon {
             color: #ced4da;
             font-size: 2.5rem;
@@ -82,7 +81,6 @@
             overflow: hidden;
         }
 
-        /* 卡片右上角背景大图标 */
         .card::after {
             position: absolute;
             top: -10px;
@@ -92,8 +90,8 @@
             font-family: "Font Awesome 6 Free";
             font-weight: 900;
         }
-        .card.write-card::after { content: "\f06c"; color: var(--primary-color); } /* 绿叶 */
-        .card.read-card::after { content: "\f004"; color: var(--accent-color); }  /* 爱心 */
+        .card.write-card::after { content: "\f06c"; color: var(--primary-color); }
+        .card.read-card::after { content: "\f004"; color: var(--accent-color); }
 
         h2 {
             margin-top: 0;
@@ -272,8 +270,12 @@
 </div>
 
 <script>
-    // 修复混合内容错误：换用安全的、对 https 站点 100% 兼容的免费公网大厅信道
-    const API_URL = 'https://kvdb.io/4y9gD8Q3N89z7r5uN2nE8G/public_hall_v5';
+    // ===== JSONBin 配置 =====
+    const BIN_ID  = '6a0b2d5f6610dd3ae865ba2c';
+    const API_KEY = '$2a$10$XbaZEhcmV2.0HdjuRQoRL.y3DJvTQFKq6D1cwf461BoSB8Buo3X56';
+    const READ_URL  = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+    const WRITE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+    // ========================
 
     let db = [];
     const textEncoder = new TextEncoder();
@@ -287,26 +289,28 @@
         );
     }
 
-    // 从公网大厅安全获取数据
+    // 从 JSONBin 读取所有留言
     async function fetchCloudMessages() {
         try {
-            const response = await fetch(API_URL);
-            if (response.status === 404) {
-                db = [];
-            } else if (response.ok) {
-                db = await response.json();
-            }
+            const response = await fetch(READ_URL, {
+                headers: { 'X-Master-Key': API_KEY }
+            });
+            if (!response.ok) throw new Error('读取失败');
+            const result = await response.json();
+            // JSONBin 把数据包在 record 字段里
+            db = Array.isArray(result.record) ? result.record : [];
             renderBoard();
         } catch (e) {
             console.error("同步云端失败：", e);
-            document.getElementById('publicBoard').innerHTML = '<p style="color:#de5d83; text-align:center; padding:20px;"><i class="fa-solid fa-circle-exclamation"></i> 信道连接异常，请检查网络</p>';
+            document.getElementById('publicBoard').innerHTML =
+                '<p style="color:#de5d83; text-align:center; padding:20px;"><i class="fa-solid fa-circle-exclamation"></i> 信道连接异常，请检查网络</p>';
         }
     }
 
-    // 发射加密信息
+    // 发送加密留言
     async function handleEncrypt() {
-        const name = document.getElementById('encryptName').value.trim();
-        const keyStr = document.getElementById('encryptKey').value.trim();
+        const name    = document.getElementById('encryptName').value.trim();
+        const keyStr  = document.getElementById('encryptKey').value.trim();
         const content = document.getElementById('encryptContent').value;
         const sendBtn = document.getElementById('sendBtn');
 
@@ -320,36 +324,42 @@
 
         try {
             const key = await deriveKey(name, keyStr);
-            const iv = crypto.getRandomValues(new Uint8Array(12)); 
+            const iv  = crypto.getRandomValues(new Uint8Array(12));
             const encodedContent = textEncoder.encode(content);
 
-            const ciphertext = await crypto.subtle.encrypt(
-                { name: 'AES-GCM', iv: iv }, key, encodedContent
-            );
+            const ciphertext  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encodedContent);
             const cipherBase64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
-            const ivBase64 = btoa(String.fromCharCode(...iv));
+            const ivBase64     = btoa(String.fromCharCode(...iv));
 
             const newMessage = {
-                time: new Date().toLocaleString(),
+                time: new Date().toLocaleString('zh-CN'),
                 data: cipherBase64,
-                iv: ivBase64
+                iv:   ivBase64
             };
 
-            // 实时打捞大厅，保证高并发多人发送不吞信
+            // 先拉取最新数据，再追加，防止覆盖别人的留言
             try {
-                const checkResponse = await fetch(API_URL);
-                if (checkResponse.ok) db = await checkResponse.json();
-            } catch(err){}
+                const checkRes = await fetch(READ_URL, { headers: { 'X-Master-Key': API_KEY } });
+                if (checkRes.ok) {
+                    const checkResult = await checkRes.json();
+                    db = Array.isArray(checkResult.record) ? checkResult.record : [];
+                }
+            } catch(err) {}
 
             db.unshift(newMessage);
-            if(db.length > 30) db.pop(); // 保持大厅顺畅
+            if (db.length > 100) db.pop(); // 最多保留100条
 
-            // 发送到公网服务器
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            // 写入 JSONBin（PUT 方法更新整个 Bin）
+            const writeRes = await fetch(WRITE_URL, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
                 body: JSON.stringify(db)
             });
+
+            if (!writeRes.ok) throw new Error('写入失败');
 
             document.getElementById('encryptContent').value = '';
             document.getElementById('encryptResult').innerHTML = `
@@ -358,6 +368,7 @@
                 </div>`;
             renderBoard();
         } catch (e) {
+            console.error(e);
             alert('云端同步失败，请重试');
         } finally {
             sendBtn.disabled = false;
@@ -367,22 +378,20 @@
 
     async function decryptMessage(msg, name, keyStr) {
         try {
-            const key = await deriveKey(name, keyStr);
-            const iv = new Uint8Array(atob(msg.iv).split('').map(c => c.charCodeAt(0)));
+            const key        = await deriveKey(name, keyStr);
+            const iv         = new Uint8Array(atob(msg.iv).split('').map(c => c.charCodeAt(0)));
             const ciphertext = new Uint8Array(atob(msg.data).split('').map(c => c.charCodeAt(0)));
-            const decrypted = await crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv: iv }, key, ciphertext
-            );
+            const decrypted  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
             return textDecoder.decode(decrypted);
         } catch (e) { return null; }
     }
 
-    // 解密寻找对应留言
+    // 解密检索留言
     async function handleDecryptAll() {
-        const name = document.getElementById('decryptName').value.trim();
-        const keyStr = document.getElementById('decryptKey').value.trim();
+        const name      = document.getElementById('decryptName').value.trim();
+        const keyStr    = document.getElementById('decryptKey').value.trim();
         const resultDiv = document.getElementById('decryptResult');
-        const getBtn = document.getElementById('getBtn');
+        const getBtn    = document.getElementById('getBtn');
 
         if (!name || !keyStr) {
             alert('请输入名字和密钥进行解密！');
@@ -404,10 +413,16 @@
 
         if (foundMessages.length > 0) {
             let html = `
-                <div class="success-box" style="background: #f4fbf7; color: #155724; border-color: #c3e6cb;">
-                    <p><strong><i class="fa-solid fa-envelope-open-text"></i> 成功从网络大厅解密出 ${foundMessages.length} 条属于你的留言：</strong></p><hr style="border-color:#c3e6cb">`;
+                <div class="success-box" style="background:#f4fbf7; color:#155724; border-color:#c3e6cb;">
+                    <p><strong><i class="fa-solid fa-envelope-open-text"></i> 成功从网络大厅解密出 ${foundMessages.length} 条属于你的留言：</strong></p>
+                    <hr style="border-color:#c3e6cb">`;
             foundMessages.forEach(m => {
-                html += `<p style="font-size:0.85rem; color:#666;">🕒 投递时间：${m.time}</p><p style="font-size:1.05rem; padding-left:10px; border-left:3px solid var(--accent-color);">💌 <strong>内容：</strong>${m.content}</p><hr style="border:0;border-top:1px dashed #c3e6cb;">`;
+                html += `
+                    <p style="font-size:0.85rem; color:#666;">🕒 投递时间：${m.time}</p>
+                    <p style="font-size:1.05rem; padding-left:10px; border-left:3px solid var(--accent-color);">
+                        💌 <strong>内容：</strong>${m.content}
+                    </p>
+                    <hr style="border:0; border-top:1px dashed #c3e6cb;">`;
             });
             html += `</div>`;
             resultDiv.innerHTML = html;
@@ -417,6 +432,7 @@
                     <i class="fa-solid fa-triangle-exclamation"></i> 全网大厅里未匹配到属于你的留言（请检查名字、暗号是否正确）。
                 </div>`;
         }
+
         getBtn.disabled = false;
         getBtn.innerHTML = '<i class="fa-solid fa-key"></i> 一键检索并解密';
     }
@@ -424,10 +440,9 @@
     function renderBoard() {
         const board = document.getElementById('publicBoard');
         if (db.length === 0) {
-            board.innerHTML = '<p style="color:#9ca3af; text-align:center; padding: 20px;"><i class="fa-solid fa-box-open"></i> 全网大厅暂无留言，快来发布第一条吧！</p>';
+            board.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:20px;"><i class="fa-solid fa-box-open"></i> 全网大厅暂无留言，快来发布第一条吧！</p>';
             return;
         }
-
         board.innerHTML = db.map(msg => `
             <div class="message-item">
                 <div class="meta"><i class="fa-solid fa-clock"></i> 同步时间：${msg.time} | <i class="fa-solid fa-cloud"></i> 状态：🔒 全网加密传输</div>
@@ -437,8 +452,8 @@
     }
 
     fetchCloudMessages();
-    // 每 8 秒悄悄自动对齐最新数据大厅，实现跨手机实时同步
-    setInterval(fetchCloudMessages, 8000);
+    // 每10秒自动刷新一次
+    setInterval(fetchCloudMessages, 10000);
 </script>
 
 </body>
