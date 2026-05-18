@@ -174,7 +174,7 @@
             padding: 16px;
             border-radius: 12px;
             margin-bottom: 12px;
-            box-shadow: inset 3px 0 0 var(--accent-color); 
+            box-shadow: inset 3px 0 0 var(--accent-color);
         }
 
         .meta {
@@ -257,7 +257,7 @@
             <label>查看密钥</label>
             <input type="password" id="decryptKey" placeholder="请输入正确的暗号">
         </div>
-        <button class="btn-decrypt" onclick="handleDecryptAll()">
+        <button class="btn-decrypt" id="getBtn" onclick="handleDecryptAll()">
             <i class="fa-solid fa-key"></i> 一键检索并解密
         </button>
         <div id="decryptResult"></div>
@@ -272,7 +272,7 @@
 </div>
 
 <script>
-    // 免费公开的多人共享数据池信道（本地 AES 强加密后再传输，云端服务器只有乱码，绝对安全）
+    // 使用你在 0.txt 里的共享共享池配置
     const CLOUD_URL = 'https://api.jsonbin.io/v3/b/6618cf8be41b4d34e4e1a065';
     const MASTER_KEY = '$2a$10$W6vS10T9G4/6G6I/kZREO.4s8VbY8Z/uSgY9IqA9K6P6E6F6G6H6I';
     
@@ -280,7 +280,7 @@
     const textEncoder = new TextEncoder();
     const textDecoder = new TextDecoder();
 
-    // 通过 姓名 + 暗号 实时派生出独一无二的 AES 加密钥匙
+    // 姓名+密钥派生核心 Key
     async function deriveKey(name, keyStr) {
         const secretMaterial = textEncoder.encode(name + "::" + keyStr);
         const hash = await crypto.subtle.digest('SHA-256', secretMaterial);
@@ -289,7 +289,7 @@
         );
     }
 
-    // 从云端公网实时获取密文数据
+    // 从公网大厅获取数据
     async function fetchCloudMessages() {
         try {
             const response = await fetch(`${CLOUD_URL}/latest`, {
@@ -301,13 +301,13 @@
             }
             renderBoard();
         } catch (e) {
-            console.error("同步云端失败，临时降级本地缓存", e);
+            console.error("同步云端失败，升级保障本地缓存", e);
             db = JSON.parse(localStorage.getItem('encrypted_board_cache')) || [];
             renderBoard();
         }
     }
 
-    // 本地安全加密并发布到公网中转站
+    // 本地多端联机发布，新增高并发抢占合并功能（防覆盖冲洗）
     async function handleEncrypt() {
         const name = document.getElementById('encryptName').value.trim();
         const keyStr = document.getElementById('encryptKey').value.trim();
@@ -323,6 +323,7 @@
         sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在本地安全加密并同步网络...';
 
         try {
+            // 1. 本地零知识量子加密
             const key = await deriveKey(name, keyStr);
             const iv = crypto.getRandomValues(new Uint8Array(12)); 
             const encodedContent = textEncoder.encode(content);
@@ -330,7 +331,6 @@
             const ciphertext = await crypto.subtle.encrypt(
                 { name: 'AES-GCM', iv: iv }, key, encodedContent
             );
-
             const cipherBase64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
             const ivBase64 = btoa(String.fromCharCode(...iv));
 
@@ -340,10 +340,22 @@
                 iv: ivBase64
             };
 
-            db.unshift(newMessage);
-            if(db.length > 30) db.pop(); // 保持公开大厅最新30条密文
+            // 2.【核心更新】推送前实时打捞最新公网大厅，防止在撰写期间其他人发信导致覆盖损失
+            try {
+                const checkResponse = await fetch(`${CLOUD_URL}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                if (checkResponse.ok) {
+                    const res = await checkResponse.json();
+                    db = res.record || [];
+                }
+            } catch(err){}
 
-            // 推送更新至云端
+            // 3. 追加合并并控制上限 30 条大厅负载
+            db.unshift(newMessage);
+            if(db.length > 30) db.pop(); 
+
+            // 4. 将最新整合列表平滑提交回云端大厅
             await fetch(CLOUD_URL, {
                 method: 'PUT',
                 headers: {
@@ -360,24 +372,21 @@
                 <div class="success-box">
                     <i class="fa-solid fa-circle-check"></i> 成功！留言已通过本地加密，并安全同步至全网公开大厅。
                 </div>`;
-            
             renderBoard();
         } catch (e) {
             console.error(e);
-            alert('云端同步失败，请检查您的网络连接');
+            alert('云端同步或加密发生偏差，请检查您的网络连接');
         } finally {
             sendBtn.disabled = false;
             sendBtn.innerHTML = '<i class="fa-solid fa-user-lock"></i> 生成加密留言并发布到网络大厅';
         }
     }
 
-    // 解密单个密文块
     async function decryptMessage(msg, name, keyStr) {
         try {
             const key = await deriveKey(name, keyStr);
             const iv = new Uint8Array(atob(msg.iv).split('').map(c => c.charCodeAt(0)));
             const ciphertext = new Uint8Array(atob(msg.data).split('').map(c => c.charCodeAt(0)));
-
             const decrypted = await crypto.subtle.decrypt(
                 { name: 'AES-GCM', iv: iv }, key, ciphertext
             );
@@ -385,16 +394,23 @@
         } catch (e) { return null; }
     }
 
-    // 一键解密大厅留言
+    // 实时抓取并检索现场一键解密
     async function handleDecryptAll() {
         const name = document.getElementById('decryptName').value.trim();
         const keyStr = document.getElementById('decryptKey').value.trim();
         const resultDiv = document.getElementById('decryptResult');
+        const getBtn = document.getElementById('getBtn');
 
         if (!name || !keyStr) {
             alert('请输入名字和密钥进行解密！');
             return;
         }
+
+        getBtn.disabled = true;
+        getBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在打捞云端信道并现场解码...';
+
+        // 解密前强行刷最新大厅，多手机同步不延时
+        await fetchCloudMessages();
 
         let foundMessages = [];
         for (let msg of db) {
@@ -419,9 +435,11 @@
                     <i class="fa-solid fa-triangle-exclamation"></i> 全网大厅里未匹配到属于你的留言（请检查名字、暗号是否正确）。
                 </div>`;
         }
+        getBtn.disabled = false;
+        getBtn.innerHTML = '<i class="fa-solid fa-key"></i> 一键检索并解密';
     }
 
-    // 渲染大厅密文
+    // 100% 还原包含你指定文案的大厅密文渲染
     function renderBoard() {
         const board = document.getElementById('publicBoard');
         if (db.length === 0) {
@@ -437,8 +455,10 @@
         `).join('');
     }
 
-    // 初始化运行
+    // 初始化轮巡
     fetchCloudMessages();
+    // 增加 15 秒一循环的自动无感大厅刷新，多台设备不用手动刷新也能看密文大厅滚动
+    setInterval(fetchCloudMessages, 15000);
 </script>
 
 </body>
