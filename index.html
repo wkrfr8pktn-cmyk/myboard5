@@ -719,6 +719,34 @@ function leaveTalking() {
     showPage('beehivePage');
 }
 
+// ===== sender 加密：数据库里只存乱码 =====
+let mySenderTag = null;
+
+async function buildSenderTag() {
+    const tagKey = await deriveKey('sender_tag::' + myName + '::' + roomId);
+    const r = await encrypt(tagKey, 'ME::' + myName);
+    return r.data + '|' + r.iv;
+}
+
+async function isMySenderTag(senderField) {
+    try {
+        const [d, iv] = senderField.split('|');
+        const tagKey = await deriveKey('sender_tag::' + myName + '::' + roomId);
+        const result = await decrypt(tagKey, d, iv);
+        return result !== null && result.startsWith('ME::');
+    } catch { return false; }
+}
+
+async function decryptSenderName(senderField) {
+    try {
+        const [d, iv] = senderField.split('|');
+        const tagKey = await deriveKey('sender_tag::' + myName + '::' + roomId);
+        const result = await decrypt(tagKey, d, iv);
+        if (result && result.startsWith('ME::')) return result.slice(4);
+        return null;
+    } catch { return null; }
+}
+
 async function loadTalkMessages(isFirst) {
     try {
         let url = `${SUPABASE_URL}/rest/v1/talk_messages?select=*&room_id=eq.${roomId}&order=id.asc`;
@@ -729,14 +757,14 @@ async function loadTalkMessages(isFirst) {
         if (!Array.isArray(msgs) || msgs.length === 0) return;
 
         const container = document.getElementById('talkMessages');
-        // 首次加载，清空占位
         if (isFirst) container.innerHTML = '';
 
         for (const msg of msgs) {
             const text = await decrypt(talkKey, msg.data, msg.iv);
             if (text === null) continue;
-            const isMine = msg.sender === myName;
-            const time   = new Date(msg.created_at).toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
+            const isMine = await isMySenderTag(msg.sender);
+            const senderName = isMine ? myName : (await decryptSenderName(msg.sender) || '对方');
+            const time = new Date(msg.created_at).toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
 
             const row = document.createElement('div');
             row.className = `msg-row ${isMine ? 'mine' : ''}`;
@@ -744,7 +772,7 @@ async function loadTalkMessages(isFirst) {
                 <div class="msg-avatar-sm ${isMine ? 'mine-av' : 'theirs'}">${isMine ? '🐝' : '🕊️'}</div>
                 <div class="msg-col">
                     <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${escHtml(text)}</div>
-                    <div class="msg-time">${isMine ? '' : msg.sender + ' · '}${time}</div>
+                    <div class="msg-time">${isMine ? '' : senderName + ' · '}${time}</div>
                 </div>`;
             container.appendChild(row);
             lastMsgId = Math.max(lastMsgId, msg.id);
@@ -763,11 +791,12 @@ async function sendTalkMessage() {
     input.value = '';
 
     try {
+        if (!mySenderTag) mySenderTag = await buildSenderTag();
         const { data, iv } = await encrypt(talkKey, text);
         await fetch(`${SUPABASE_URL}/rest/v1/talk_messages`, {
             method: 'POST',
             headers: { ...HEADERS, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ room_id: roomId, sender: myName, data, iv })
+            body: JSON.stringify({ room_id: roomId, sender: mySenderTag, data, iv })
         });
         await loadTalkMessages(false);
     } catch(e) {
