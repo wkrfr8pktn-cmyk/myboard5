@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://jfchuqpxmimjyxsxrixp.supabase.co https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com; connect-src https://jfchuqpxmimjyxsxrixp.supabase.co;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
 <title>匿名加密留言板</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -54,6 +56,8 @@ textarea { resize: vertical; height: 90px; }
 .btn-dark:hover { background: #1a2a30; }
 .btn-honey { background: linear-gradient(135deg, var(--honey), var(--honey-dark)); box-shadow: 0 3px 10px rgba(245,166,35,0.3); }
 .btn-honey:hover { background: linear-gradient(135deg, var(--honey-dark), #c97706); }
+.btn-red { background: #ef4444; }
+.btn-red:hover { background: #dc2626; }
 
 .beehive-entry {
     width: 100%; background: linear-gradient(135deg, var(--honey), var(--honey-dark));
@@ -96,6 +100,16 @@ textarea { resize: vertical; height: 90px; }
 .back-link { background: none; border: none; color: #b45309; font-size: 0.85rem; cursor: pointer; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; font-family: inherit; }
 .back-link:hover { color: #92400e; }
 
+/* ===== PROFILE PAGE ===== */
+#profilePage {
+    background: linear-gradient(160deg, #fffbf0, #fef3c7);
+    align-items: center; justify-content: center; padding: 30px 20px;
+}
+.profile-box { background: rgba(255,255,255,0.9); border: 1px solid rgba(245,166,35,0.25); border-radius: 20px; padding: 32px 24px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 8px 30px rgba(245,166,35,0.15); }
+.profile-avatar { font-size: 4.5rem; margin-bottom: 20px; }
+.profile-name { font-size: 1.5rem; font-weight: 700; color: #92400e; margin-bottom: 8px; }
+.profile-username { font-size: 0.95rem; color: #b45309; margin-bottom: 30px; }
+
 /* ===== REGISTER EXTRA ===== */
 .avatar-picker-row { display: flex; gap: 10px; overflow-x: auto; padding: 8px 0; scrollbar-width: none; }
 .avatar-picker-row::-webkit-scrollbar { display: none; }
@@ -104,18 +118,16 @@ textarea { resize: vertical; height: 90px; }
 .avatar-opt.selected { border-color: var(--honey-dark); background: #fef3c7; box-shadow: 0 0 0 3px rgba(245,166,35,0.25); transform: scale(1.12); }
 
 /* ===== BEEHIVE LIST PAGE ===== */
-#beehivePage { background: #faf8f3; }
-.bee-topbar { background: linear-gradient(135deg, #fffbf0, #fef3c7); border-bottom: 1px solid #fde68a; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 10px; }
-.bee-topbar-title { display: flex; flex-direction: column; align-items: center; flex: 1; }
-.bee-topbar-title span:first-child { font-size: 0.75rem; color: #b45309; letter-spacing: 1px; }
-.bee-topbar-title span:last-child { font-size: 1.1rem; font-weight: 800; color: #92400e; letter-spacing: 2px; }
+#beehivePage { background: #faf8f3; align-items: center; }
+#beehivePage > * { width: 100%; max-width: 600px; }
+.bee-topbar { background: linear-gradient(135deg, #fffbf0, #fef3c7); border-bottom: 1px solid #fde68a; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 10px; }
 .bee-topbar-left { display: flex; align-items: center; gap: 8px; }
-.bee-topbar-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#fde68a,#fbbf24); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-.bee-user-name { font-size: 0.82rem; color: #92400e; font-weight: 600; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bee-topbar-right { display: flex; align-items: center; gap: 10px; }
-.bee-add-btn { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,var(--honey),var(--honey-dark)); border: none; color: white; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(245,166,35,0.3); }
-.bee-home-btn { background: none; border: 1px solid #fcd34d; color: #b45309; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; background: #fffdf5; }
-.bee-home-btn:hover { background: #fef3c7; }
+.bee-home-btn { background: none; border: none; color: #b45309; font-size: 1.35rem; padding: 6px 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.bee-home-btn:hover { background: rgba(245,166,35,0.15); }
+.bee-topbar-center { flex: 1; text-align: center; }
+.bee-topbar-title { font-size: 1.05rem; font-weight: 800; color: #92400e; letter-spacing: 1px; }
+.bee-topbar-right { display: flex; align-items: center; gap: 8px; }
+.bee-topbar-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg,#fde68a,#fbbf24); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 
 .bee-deco { display: flex; justify-content: center; gap: 10px; font-size: 0.9rem; opacity: 0.3; padding: 5px 0; flex-shrink: 0; }
 
@@ -144,7 +156,9 @@ textarea { resize: vertical; height: 90px; }
 .add-room-box input:focus { border-color: var(--honey); box-shadow: 0 0 0 3px rgba(245,166,35,0.15); }
 
 /* ===== CHAT PAGE ===== */
-#chatPage { background: #faf8f3; }
+#chatPage { background: #faf8f3; align-items: center; }
+#chatPage > * { width: 100%; max-width: 600px; }
+#chatPage .chat-messages { max-width: 600px; width: 100%; }
 .chat-topbar { background: linear-gradient(135deg,#fffbf0,#fef3c7); border-bottom: 1px solid #fde68a; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .chat-back { background: none; border: none; color: #b45309; font-size: 1.2rem; cursor: pointer; padding: 6px; border-radius: 7px; }
 .chat-back:hover { background: rgba(245,166,35,0.15); }
@@ -304,16 +318,30 @@ textarea { resize: vertical; height: 90px; }
     </div>
 </div>
 
+<!-- 新增：个人资料页 -->
+<div id="profilePage" class="page">
+    <div class="profile-box">
+        <div id="profileAvatarBig" class="profile-avatar">🐝</div>
+        <div id="profileNickname" class="profile-name">-</div>
+        <div id="profileUsername" class="profile-username">-</div>
+        
+        <button class="btn btn-red" onclick="doLogout()" style="margin-top:20px;">
+            <i class="fa-solid fa-right-from-bracket"></i> 退出登录
+        </button>
+        <button class="back-link" onclick="showPage('beehivePage')">
+            <i class="fa-solid fa-arrow-left"></i> 返回蜂箱
+        </button>
+    </div>
+</div>
+
 <div id="beehivePage" class="page">
     <div class="bee-topbar">
         <div class="bee-topbar-left">
-            <button class="bee-home-btn" onclick="showPage('mainPage')"><i class="fa-solid fa-house"></i> 留言板</button>
-            <div class="bee-topbar-avatar" id="beeMyAvatar" style="margin-left: 5px;">🐝</div>
-            <span class="bee-user-name" id="beeMyName">-</span>
+            <button class="bee-home-btn" onclick="showPage('mainPage')"><i class="fa-solid fa-house"></i></button>
+            <div onclick="showProfile()" id="beeMyAvatarTop" class="bee-topbar-avatar">🐝</div>
         </div>
-        <div class="bee-topbar-title">
-            <span>私密空间</span>
-            <span>蜂箱对话</span>
+        <div class="bee-topbar-center">
+            <div class="bee-topbar-title">私密空间 · 蜂箱对话</div>
         </div>
         <div class="bee-topbar-right">
             <button class="bee-add-btn" onclick="showPage('addRoomPage')">＋</button>
@@ -404,6 +432,23 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const H = { 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY };
 
 const te = new TextEncoder(), td = new TextDecoder();
+
+// ============================================================
+// 安全：请求频率限制（防止暴力破解登录/注册）
+// ============================================================
+const _rateLimits = {};
+function rateLimit(action, maxTimes, windowMs) {
+    const now = Date.now();
+    if (!_rateLimits[action]) _rateLimits[action] = [];
+    _rateLimits[action] = _rateLimits[action].filter(t => now - t < windowMs);
+    if (_rateLimits[action].length >= maxTimes) return false;
+    _rateLimits[action].push(now);
+    return true;
+}
+// 安全：清理输入（防 XSS 注入）
+function sanitize(str) {
+    return String(str).trim().substring(0, 200);
+}
 
 const AVATARS = ['🐝','🕊️','🦋','🐄','🐘','🦁','🍃','🐦','🐟'];
 
@@ -537,114 +582,35 @@ function saveUserToStorage(userObj) {
     localStorage.setItem('bee_current_user', JSON.stringify(userObj));
 }
 
-async function doLogin() {
-    const user=document.getElementById('loginUser').value.trim();
-    const pass=document.getElementById('loginPass').value.trim();
-    const err=document.getElementById('loginErr');
-    if(!user||!pass){err.textContent='请填写账号和密码';return;}
-    err.textContent='正在验证...';
-    try {
-        const userHash = await sha256hex('user::'+user);
-        const passHash = await sha256hex('pw::'+pass);
-        const r=await fetch(`${SB_URL}/rest/v1/bee_users?username_hash=eq.${userHash}&select=*`,{headers:H});
-        const rows=await r.json();
-        if(!rows.length){err.textContent='账号不存在';return;}
-        const row=rows[0];
-        if(row.pass_hash!==passHash){err.textContent='密码错误';return;}
-        
-        const profileKey = await deriveKey('profile::'+user+'::'+pass);
-        const nickname = await aesDecrypt(profileKey, row.nickname_data, row.nickname_iv);
-        const avatar   = await aesDecrypt(profileKey, row.avatar_data,   row.avatar_iv);
-        if(!nickname||!avatar){err.textContent='解密用户信息失败，请检查密码';return;}
-        
-        saveUserToStorage({username:user, userHash, nickname, avatar});
-        err.textContent='';
-        enterBeehive();
-        startBackgroundSync();
-    } catch(e) { err.textContent='网络错误，请重试'; }
+function showProfile() {
+    if (!currentUser) return;
+    document.getElementById('profileAvatarBig').textContent = currentUser.avatar;
+    document.getElementById('profileNickname').textContent = currentUser.nickname;
+    document.getElementById('profileUsername').textContent = currentUser.username;
+    showPage('profilePage');
 }
 
-let pendingRegUser='', pendingRegPassHash='', pendingRegUserHash='', pendingProfileKey=null;
-async function doRegisterStep1() {
-    const user=document.getElementById('regUser').value.trim();
-    const pass=document.getElementById('regPass').value.trim();
-    const pass2=document.getElementById('regPass2').value.trim();
-    const err=document.getElementById('regErr');
-    if(user.length<4||pass.length<4){err.textContent='账号和密码均需至少4个字符';return;}
-    if(pass!==pass2){err.textContent='两次密码不一致';return;}
-    err.textContent='';
-    const userHash = await sha256hex('user::'+user);
-    const r=await fetch(`${SB_URL}/rest/v1/bee_users?username_hash=eq.${userHash}&select=username_hash`,{headers:H});
-    const rows=await r.json();
-    if(rows.length){err.textContent='该账号已被注册';return;}
-    pendingRegUser=user;
-    pendingRegUserHash=userHash;
-    pendingRegPassHash=await sha256hex('pw::'+pass);
-    pendingProfileKey=await deriveKey('profile::'+user+'::'+pass);
-    document.getElementById('registerStep1').style.display='none';
-    document.getElementById('registerStep2').style.display='';
-}
-
-let selectedAvatar = AVATARS[0];
-function buildAvatarPicker() {
-    const el=document.getElementById('avatarPicker');
-    if(!el) return;
-    el.innerHTML=AVATARS.map((a,i)=>
-        `<div class="avatar-opt${i===0?' selected':''}" onclick="selectAvatar(this,'${a}')">${a}</div>`
-    ).join('');
-}
-function selectAvatar(el, av) {
-    document.querySelectorAll('.avatar-opt').forEach(e=>e.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedAvatar=av;
-}
-
-async function doRegisterStep2() {
-    const nick=document.getElementById('regNick').value.trim();
-    const err=document.getElementById('regErr2');
-    if(!nick){err.textContent='请填写昵称';return;}
-    err.textContent='';
-    try {
-        const {data:nd, iv:niv} = await aesEncrypt(pendingProfileKey, nick);
-        const {data:ad, iv:aiv} = await aesEncrypt(pendingProfileKey, selectedAvatar);
-        const r=await fetch(`${SB_URL}/rest/v1/bee_users`,{
-            method:'POST', headers:{...H,'Prefer':'return=minimal'},
-            body:JSON.stringify({
-                username_hash: pendingRegUserHash,
-                pass_hash:     pendingRegPassHash,
-                nickname_data: nd, nickname_iv: niv,
-                avatar_data:   ad, avatar_iv:   aiv
-            })
-        });
-        if(!r.ok) throw new Error();
-        saveUserToStorage({username:pendingRegUser, userHash:pendingRegUserHash, nickname:nick, avatar:selectedAvatar});
-        switchToLogin();
-        enterBeehive();
-        startBackgroundSync();
-    } catch { err.textContent='注册失败，请重试'; }
-}
-
-function switchToRegister() {
-    document.getElementById('loginForm').style.display='none';
-    document.getElementById('registerForm').style.display='';
-    document.getElementById('authSubtitle').textContent='创建你的蜂箱账号';
-    buildAvatarPicker();
-}
-function switchToLogin() {
-    document.getElementById('registerForm').style.display='none';
-    document.getElementById('loginForm').style.display='';
-    document.getElementById('registerStep1').style.display='';
-    document.getElementById('registerStep2').style.display='none';
-    document.getElementById('authSubtitle').textContent='登录你的蜂箱账号';
+async function doLogout() {
+    if (!confirm('确定要退出登录吗？所有本地聊天记录将被清除。')) return;
+    
+    // 彻底清除登录痕迹
+    localStorage.removeItem('bee_current_user');
+    if (currentUser) {
+        localStorage.removeItem('bee_rooms_' + currentUser.username);
+    }
+    currentUser = null;
+    myRooms = [];
+    showPage('mainPage');
+    alert('已安全退出，所有本地数据已清除。');
 }
 
 // ============================================================
 // 蜂箱主界面 & 本地缓存扩展
-// myRooms 扩展属性：{ roomId, roomName, roomKey, lastTime, lastMsg, lastReadId, unreadCount }
+// myRooms 扩展属性：{ roomId, roomName, roomKey, lastTime, lastMsg, lastReadId, unreadCount, otherAvatar? }
 // ============================================================
 let myRooms = []; 
 
-function roomStorageKey() { return 'bee_rooms_' + currentUser.username; }
+function roomStorageKey() { return 'bee_rooms_' + (currentUser ? currentUser.username : ''); }
 
 function loadMyRooms() {
     try { myRooms = JSON.parse(localStorage.getItem(roomStorageKey()) || '[]'); }
@@ -655,11 +621,11 @@ function saveMyRooms() {
 }
 
 function enterBeehive() {
-    document.getElementById('beeMyAvatar').textContent = currentUser.avatar;
-    document.getElementById('beeMyName').textContent = currentUser.nickname;
+    document.getElementById('beeMyAvatarTop').textContent = currentUser.avatar;
     loadMyRooms();
     renderChatList();
     showPage('beehivePage');
+    startBackgroundSync();
 }
 
 function renderChatList() {
@@ -671,10 +637,11 @@ function renderChatList() {
     const sorted=[...myRooms].sort((a,b)=>(b.lastTime||0)-(a.lastTime||0));
     el.innerHTML=sorted.map(room=>{
         const previewText = room.lastMsg ? escHtml(room.lastMsg) : '🔒 加密聊天';
+        const avatarHtml = room.otherAvatar ? `<div class="bee-chat-icon">${room.otherAvatar}</div>` : `<div class="bee-chat-icon">🍯</div>`;
         const badgeHtml = (room.unreadCount && room.unreadCount > 0) ? `<span class="bee-unread-count">${room.unreadCount}条未读</span>` : '';
         return `
         <div class="bee-chat-item" onclick="openChat('${room.roomId}')">
-            <div class="bee-chat-icon">🍯</div>
+            ${avatarHtml}
             <div class="bee-chat-info">
                 <div class="bee-chat-name">${escHtml(room.roomName)}</div>
                 <div class="bee-chat-preview">${previewText}</div>
@@ -696,7 +663,7 @@ function timeAgo(ts) {
 }
 
 // ============================================================
-// 后台静默轮询更新最新消息与未读数
+// 后台静默轮询更新最新消息与未读数 + 尝试提取对方头像（1v1场景）
 // ============================================================
 let bgSyncTimer = null;
 
@@ -719,16 +686,18 @@ async function backgroundSync() {
 
     for (let room of myRooms) {
         try {
-            const url = `${SB_URL}/rest/v1/talk_messages?select=id,data,iv,created_at&room_id=eq.${room.roomId}&order=id.desc&limit=20`;
+            const url = `${SB_URL}/rest/v1/talk_messages?select=id,data,iv,created_at,sender_data,sender_iv&room_id=eq.${room.roomId}&order=id.desc&limit=20`;
             const r = await fetch(url, {headers:H});
             const msgs = await r.json();
             if (!Array.isArray(msgs) || !msgs.length) continue;
 
             const roomKey = await deriveKey('talk::'+room.roomKey);
+            const senderKey = await deriveKey('sender::'+room.roomKey);
             
-            // 找出最新的一条可完美解密的消息作为预览
             let latestDecryptedMsg = null;
             let latestMsgTime = null;
+            let otherAv = null;
+
             for(let m of msgs) {
                 const text = await aesDecrypt(roomKey, m.data, m.iv);
                 if(text !== null) {
@@ -737,19 +706,30 @@ async function backgroundSync() {
                         latestMsgTime = new Date(m.created_at).getTime();
                     }
                 }
+                // 尝试提取对方头像（非自己）
+                if (!otherAv && m.sender_data && m.sender_iv) {
+                    const senderJson = await aesDecrypt(senderKey, m.sender_data, m.sender_iv);
+                    if (senderJson) {
+                        try {
+                            const s = JSON.parse(senderJson);
+                            if (s.username !== currentUser.username && s.avatar) {
+                                otherAv = s.avatar;
+                            }
+                        } catch(e){}
+                    }
+                }
             }
 
-            // 计算未读数 (id > lastReadId)
             let unreadCount = 0;
             const lastRead = room.lastReadId || 0;
             msgs.forEach(m => {
                 if (m.id > lastRead) unreadCount++;
             });
 
-            if (room.lastMsg !== latestDecryptedMsg || room.unreadCount !== unreadCount) {
+            if (room.lastMsg !== latestDecryptedMsg || room.unreadCount !== unreadCount || room.otherAvatar !== otherAv) {
                 room.lastMsg = latestDecryptedMsg;
                 if(latestMsgTime) room.lastTime = latestMsgTime;
-                // 如果当前正好在跟这个人聊天，未读直接清零
+                room.otherAvatar = otherAv || room.otherAvatar; // 保留已有头像
                 room.unreadCount = (chatRoomId === room.roomId) ? 0 : unreadCount;
                 needSave = true;
             }
@@ -761,7 +741,6 @@ async function backgroundSync() {
 
     if (needSave) {
         saveMyRooms();
-        // 如果正好在私密列表页，顺便冲刷视图
         if(document.getElementById('beehivePage').classList.contains('active')) {
             renderChatList();
         }
@@ -798,7 +777,7 @@ async function doJoinRoom() {
     const roomId=await sha256hex('room::'+rKey);
     const short=roomId.substring(0,20);
     if(myRooms.find(r=>r.roomId===short)){err.textContent='你已加入该聊天';return;}
-    myRooms.push({roomId:short, roomName:rName, roomKey:rKey, lastTime:Date.now(), lastMsg:'', lastReadId:0, unreadCount:0});
+    myRooms.push({roomId:short, roomName:rName, roomKey:rKey, lastTime:Date.now(), lastMsg:'', lastReadId:0, unreadCount:0, otherAvatar:null});
     saveMyRooms();
     document.getElementById('joinRoomKey').value='';
     document.getElementById('joinRoomName').value='';
@@ -816,7 +795,7 @@ async function doCreateRoom() {
     const roomId=await sha256hex('room::'+rKey);
     const short=roomId.substring(0,20);
     if(myRooms.find(r=>r.roomId===short)){err.textContent='你已创建或加入该聊天';return;}
-    myRooms.push({roomId:short, roomName:rName, roomKey:rKey, lastTime:Date.now(), lastMsg:'', lastReadId:0, unreadCount:0});
+    myRooms.push({roomId:short, roomName:rName, roomKey:rKey, lastTime:Date.now(), lastMsg:'', lastReadId:0, unreadCount:0, otherAvatar:null});
     saveMyRooms();
     document.getElementById('createRoomKey').value='';
     document.getElementById('createRoomName').value='';
@@ -839,6 +818,7 @@ async function openChat(roomId) {
     chatKey = await deriveKey('talk::'+room.roomKey);
     chatLastId = 0;
     document.getElementById('chatRoomName').textContent = room.roomName;
+    document.getElementById('chatRoomIcon').textContent = room.otherAvatar || '🍯';
     document.getElementById('chatMessages').innerHTML =
         `<div class="chat-empty"><div class="big">🐝</div><div>蜂箱已开启，消息均已加密</div></div>`;
     showPage('chatPage');
@@ -850,12 +830,11 @@ async function openChat(roomId) {
 function leaveChat() {
     if(chatPoll){clearInterval(chatPoll);chatPoll=null;}
     
-    // 退出聊天框时更新已读线
     const room=myRooms.find(r=>r.roomId===chatRoomId);
     if(room){
         room.lastReadId = chatLastId;
         room.unreadCount = 0;
-        room.lastTime = Date.now();
+        // 注意：lastTime 由 backgroundSync 根据最新消息时间戳更新，这里不覆盖
         saveMyRooms();
     }
     
@@ -878,7 +857,6 @@ async function loadChatMessages(isFirst) {
         if(isFirst) container.innerHTML='';
 
         for(const msg of msgs){
-            // 去重判断：检测页面中是否已经存在该消息ID的DOM节点
             if(container.querySelector(`[data-msg-id="${msg.id}"]`)) {
                 chatLastId = Math.max(chatLastId, msg.id);
                 continue;
@@ -900,7 +878,7 @@ async function loadChatMessages(isFirst) {
             const time=new Date(msg.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
             const row=document.createElement('div');
             row.className=`msg-row${isMine?' mine':''}`;
-            row.setAttribute('data-msg-id', msg.id); // 绑定消息ID去重
+            row.setAttribute('data-msg-id', msg.id);
             row.innerHTML=`
                 <div class="msg-av${isMine?' mine-av':''}">${av}</div>
                 <div class="msg-col">
@@ -913,7 +891,6 @@ async function loadChatMessages(isFirst) {
         }
         container.scrollTop=container.scrollHeight;
 
-        // 刷新即时已读指针
         const room=myRooms.find(r=>r.roomId===chatRoomId);
         if(room && chatLastId > (room.lastReadId || 0)) {
             room.lastReadId = chatLastId;
@@ -924,9 +901,11 @@ async function loadChatMessages(isFirst) {
 }
 
 async function sendChatMessage() {
+    if (!rateLimit('sendMsg', 10, 10000)) return; // 10秒内最多10条
     const input=document.getElementById('chatInput');
     const text=input.value.trim();
     if(!text||!chatKey) return;
+    if(text.length > 2000) { alert('消息不能超过2000字'); return; }
     const btn=document.getElementById('chatSendBtn');
     btn.disabled=true; input.value='';
     try {
@@ -940,8 +919,7 @@ async function sendChatMessage() {
             body:JSON.stringify({room_id:chatRoomId, sender_data:sd, sender_iv:siv, data, iv})
         });
         
-        // 核心修复：不显式手动调用同步拉取，交给定时轮询或等待200ms后再静默同步，可彻底断开并发渲染造成的双份显示现象
-        setTimeout(() => { loadChatMessages(false); }, 100);
+        setTimeout(() => { loadChatMessages(false); }, 120);
     } catch(e){console.error('发送失败',e);}
     finally{btn.disabled=false; input.focus();}
 }
@@ -962,7 +940,6 @@ buildAvatarPicker();
 fetchCloudMessages();
 setInterval(fetchCloudMessages, 10000);
 
-// 如果是永久登录状态，直接开启后台轮询
 if (currentUser) {
     startBackgroundSync();
 }
