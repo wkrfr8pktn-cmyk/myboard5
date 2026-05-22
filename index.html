@@ -136,10 +136,7 @@ textarea { resize: vertical; height: 90px; }
 .bee-chat-item:hover { background: #fffbf0; }
 .bee-chat-icon { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#fde68a,#fbbf24); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
 .bee-chat-info { flex: 1; min-width: 0; }
-.bee-chat-name { font-weight: 700; font-size: 0.95rem; color: #92400e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bee-chat-preview { font-size: 0.8rem; color: var(--gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-.bee-chat-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
-.bee-chat-time { font-size: 0.72rem; color: #adb5bd; }
+.bee-chat-name { font-weight: 700; font-size: 0.95rem; color: #92400e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .bee-unread-count { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 0.72rem; font-weight: 700; padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
 .bee-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #d1d5db; font-size: 0.9rem; gap: 10px; padding: 40px 20px; }
 .bee-empty .big { font-size: 3rem; }
@@ -193,6 +190,62 @@ textarea { resize: vertical; height: 90px; }
 .chat-send:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
 .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #d1d5db; font-size: 0.88rem; text-align: center; gap: 8px; padding: 20px; }
 .chat-empty .big { font-size: 2.5rem; }
+
+/* ===== ZUIHUAYIN ===== */
+#zuihuayinPage{background:#e8dcc8;overflow:hidden;position:relative;}
+.wood-bg{position:absolute;inset:0;background:linear-gradient(180deg,#e7dbc6,#dbc7ab);background-size:100% 40px;opacity:.95;}
+.zh-back{position:absolute;top:18px;left:18px;z-index:35;border:none;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);padding:10px 14px;border-radius:20px;color:#6d5847;cursor:pointer;}
+.zh-stage{position:relative;z-index:2;height:100vh;perspective:1200px;overflow:hidden;}
+
+/* 主视图核心卡片样式统一 */
+.zh-card {
+    position:absolute;left:50%;width:min(88vw,620px);background:#f8f4ec !important;border-radius:26px;opacity:1 !important;filter:none !important;
+    box-shadow:0 25px 55px rgba(73,54,34,.22),0 4px 12px rgba(0,0,0,.08);padding:28px;
+    border:1px solid rgba(130,110,80,.08);transition:.55s cubic-bezier(.2,.8,.2,1);
+}
+#currentCard{top:18vh;height:64vh;z-index:12;transform:translateX(-50%);}
+/* 上一张卡片位置：垂直位置在当前张上方，但层叠在大卡片的下方（z-index:9），且漏出较多一点方便点击 */
+#previousCard{
+    top:6vh;height:64vh;z-index:9;
+    transform:translateX(-50%) scale(0.95);
+    cursor:pointer;overflow:hidden;opacity:1 !important;filter:none !important;
+    box-shadow:0 12px 35px rgba(73,54,34,.16);
+}
+.zh-card textarea{width:100%;height:100%;border:none;background:transparent;resize:none;outline:none;font-size:1rem;line-height:1.8;color:#5a4a3d;font-family:Georgia,serif;}
+#zhAddBtn{position:absolute;top:18px;right:18px;width:42px;height:42px;border:none;border-radius:50%;background:rgba(248,244,236,.88);box-shadow:0 4px 14px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#6f5b4a;z-index:36;cursor:pointer;}
+
+/* 极致顺滑不卡顿、完全不透明的卡片罗列界面 */
+#historyDeck {
+position:absolute;inset:0;z-index:20;display:none;overflow-y:auto;overflow-x:hidden;
+-webkit-overflow-scrolling:touch;background:#ebe4d8;
+opacity:1;perspective:1200px;
+/* padding 让首尾卡也能滚到屏幕 45% 位置 */
+padding:calc(45vh - 28vh) 0 calc(55vh);
+}
+.deck-card{
+position:relative;margin:0 auto;width:min(72vw,480px);height:56vh;
+background:#f8f4ec;border-radius:26px;padding:22px;
+box-shadow:0 10px 28px rgba(73,54,34,.12);
+border:1px solid rgba(130,110,80,.08);
+transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, filter .2s;
+will-change:transform;cursor:pointer;
+/* 卡间距：让下方卡完整可见，间距 = 一点点呼吸空间 */
+margin-bottom:24px;
+}
+#deckOverlay{
+position:absolute;inset:0;background:rgba(30,20,10,.12);backdrop-filter:blur(3px);
+opacity:0;pointer-events:none;transition:.35s;z-index:24;
+}
+.body-catalog #deckOverlay{opacity:1;pointer-events:auto;}
+.body-catalog .zh-stage{transform:translateX(68%);transition:.42s cubic-bezier(.2,.8,.2,1);}
+#catalogPanel{position:absolute;left:-78%;top:0;width:75%;height:100%;background:rgba(248,244,236,.96);backdrop-filter:blur(12px);z-index:25;padding:90px 16px 30px;overflow:auto;transition:.42s cubic-bezier(.2,.8,.2,1);}
+.body-catalog #catalogPanel{left:0;}
+.catalog-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;}
+.catalog-thumb{width:56px;height:72px;background:#f8f4ec;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);}
+
+.card-slide-in{animation:cardUp .55s cubic-bezier(.2,.8,.2,1);}
+@keyframes cardUp{from{transform:translateX(-50%) translateY(120px);opacity:.4}to{transform:translateX(-50%) translateY(0);opacity:1}}
+#saveHint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(60,60,60,.68);color:white;padding:6px 12px;border-radius:14px;font-size:.8rem;opacity:0;transition:.3s;z-index:40;}
 </style>
 </head>
 <body>
@@ -247,6 +300,10 @@ textarea { resize: vertical; height: 90px; }
     <button class="beehive-entry" onclick="handleGoBeehive()">
         <span>🐝 进入「蜂箱」</span>
         <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+    <button class="beehive-entry" style="background:linear-gradient(135deg,#c8b79b,#a58d72);box-shadow:0 4px 14px rgba(120,90,60,.25)" onclick="openZuihuayin()">
+        <span>🍂 进入「醉花阴」</span><i class="fa-solid fa-chevron-right"></i>
     </button>
 
     <div class="card">
@@ -318,7 +375,6 @@ textarea { resize: vertical; height: 90px; }
     </div>
 </div>
 
-<!-- 新增：个人资料页 -->
 <div id="profilePage" class="page">
     <div class="profile-box">
         <div id="profileAvatarBig" class="profile-avatar">🐝</div>
@@ -423,6 +479,19 @@ textarea { resize: vertical; height: 90px; }
     </div>
 </div>
 
+
+<div id="zuihuayinPage" class="page">
+<div class="wood-bg"></div>
+<div id="deckOverlay" onclick="document.body.classList.remove('body-catalog')"></div><div id="catalogPanel"></div>
+<div class="zh-stage" id="zhStage">
+<button id="zhAddBtn" onclick="addNewZhCard()">＋</button>
+<div class="zh-card" id="previousCard" onclick="toggleHistoryDeck(true)"></div>
+<div class="zh-card" id="currentCard"><textarea id="zhTextarea" placeholder="写下此刻…"></textarea></div>
+<div id="historyDeck"></div>
+<div id="saveHint">已保存</div>
+</div>
+</div>
+
 <script>
 // ============================================================
 // Supabase 配置
@@ -434,7 +503,7 @@ const H = { 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':
 const te = new TextEncoder(), td = new TextDecoder();
 
 // ============================================================
-// 安全：请求频率限制（防止暴力破解登录/注册）
+// 安全工具
 // ============================================================
 const _rateLimits = {};
 function rateLimit(action, maxTimes, windowMs) {
@@ -445,29 +514,15 @@ function rateLimit(action, maxTimes, windowMs) {
     _rateLimits[action].push(now);
     return true;
 }
-// 安全：清理输入（防 XSS 注入）
-function sanitize(str) {
-    return String(str).trim().substring(0, 200);
-}
-
+function sanitize(str) { return String(str).trim().substring(0, 200); }
 const AVATARS = ['🐝','🕊️','🦋','🐄','🐘','🦁','🍃','🐦','🐟'];
 
-// ============================================================
-// 页面切换
-// ============================================================
 function showPage(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
 }
-
-function handleGoBeehive() {
-    if (currentUser) {
-        enterBeehive();
-    } else {
-        showPage('authPage');
-    }
-}
+function handleGoBeehive() { if (currentUser) enterBeehive(); else showPage('authPage'); }
 
 // ============================================================
 // 加密工具
@@ -496,7 +551,7 @@ async function sha256hex(s) {
 }
 
 // ============================================================
-// 主页：留言板
+// 主页留言板
 // ============================================================
 let boardDb = [];
 async function fetchCloudMessages() {
@@ -505,8 +560,7 @@ async function fetchCloudMessages() {
         boardDb = await r.json();
         renderBoard();
     } catch {
-        document.getElementById('publicBoard').innerHTML =
-            '<p style="color:#de5d83;text-align:center;padding:14px"><i class="fa-solid fa-circle-exclamation"></i> 信道连接异常</p>';
+        document.getElementById('publicBoard').innerHTML = '<p style="color:#de5d83;text-align:center;padding:14px"><i class="fa-solid fa-circle-exclamation"></i> 信道连接异常</p>';
     }
 }
 async function handleEncrypt() {
@@ -567,10 +621,9 @@ function renderBoard() {
 }
 
 // ============================================================
-// 蜂箱账号系统（持久化账户）
+// 蜂箱账号系统
 // ============================================================
 let currentUser = null; 
-
 function loadUserFromStorage() {
     try {
         const saved = localStorage.getItem('bee_current_user');
@@ -581,7 +634,6 @@ function saveUserToStorage(userObj) {
     currentUser = userObj;
     localStorage.setItem('bee_current_user', JSON.stringify(userObj));
 }
-
 function showProfile() {
     if (!currentUser) return;
     document.getElementById('profileAvatarBig').textContent = currentUser.avatar;
@@ -589,45 +641,28 @@ function showProfile() {
     document.getElementById('profileUsername').textContent = currentUser.username;
     showPage('profilePage');
 }
-
 async function doLogout() {
     if (!confirm('确定要退出登录吗？所有本地聊天记录将被清除。')) return;
-    
-    // 彻底清除登录痕迹
     localStorage.removeItem('bee_current_user');
-    if (currentUser) {
-        localStorage.removeItem('bee_rooms_' + currentUser.username);
-    }
-    currentUser = null;
-    myRooms = [];
+    if (currentUser) localStorage.removeItem('bee_rooms_' + currentUser.username);
+    currentUser = null; myRooms = [];
     showPage('mainPage');
     alert('已安全退出，所有本地数据已清除。');
 }
 
 // ============================================================
-// 蜂箱主界面 & 本地缓存扩展
-// myRooms 扩展属性：{ roomId, roomName, roomKey, lastTime, lastMsg, lastReadId, unreadCount, otherAvatar? }
+// 蜂箱主界面 & 对话
 // ============================================================
 let myRooms = []; 
-
 function roomStorageKey() { return 'bee_rooms_' + (currentUser ? currentUser.username : ''); }
-
 function loadMyRooms() {
-    try { myRooms = JSON.parse(localStorage.getItem(roomStorageKey()) || '[]'); }
-    catch { myRooms = []; }
+    try { myRooms = JSON.parse(localStorage.getItem(roomStorageKey()) || '[]'); } catch { myRooms = []; }
 }
-function saveMyRooms() {
-    if(currentUser) localStorage.setItem(roomStorageKey(), JSON.stringify(myRooms));
-}
-
+function saveMyRooms() { if(currentUser) localStorage.setItem(roomStorageKey(), JSON.stringify(myRooms)); }
 function enterBeehive() {
     document.getElementById('beeMyAvatarTop').textContent = currentUser.avatar;
-    loadMyRooms();
-    renderChatList();
-    showPage('beehivePage');
-    startBackgroundSync();
+    loadMyRooms(); renderChatList(); showPage('beehivePage'); startBackgroundSync();
 }
-
 function renderChatList() {
     const el = document.getElementById('beeChatList');
     if(!myRooms.length){
@@ -653,7 +688,6 @@ function renderChatList() {
         </div>`;
     }).join('');
 }
-
 function timeAgo(ts) {
     const diff = Date.now() - ts;
     if(diff < 60000) return '刚刚';
@@ -662,287 +696,349 @@ function timeAgo(ts) {
     return Math.floor(diff/86400000)+'天前';
 }
 
-// ============================================================
-// 后台静默轮询更新最新消息与未读数 + 尝试提取对方头像（1v1场景）
-// ============================================================
 let bgSyncTimer = null;
-
-function startBackgroundSync() {
-    if(bgSyncTimer) clearInterval(bgSyncTimer);
-    backgroundSync();
-    bgSyncTimer = setInterval(backgroundSync, 7000);
-}
-
+function startBackgroundSync() { if(bgSyncTimer) clearInterval(bgSyncTimer); backgroundSync(); bgSyncTimer = setInterval(backgroundSync, 7000); }
 async function backgroundSync() {
     if (!currentUser) return;
     loadMyRooms();
-    if (!myRooms.length) {
-        updateMainPageUnreadUI(0);
-        return;
-    }
-
-    let totalUnread = 0;
-    let needSave = false;
-
+    if (!myRooms.length) { updateMainPageUnreadUI(0); return; }
+    let totalUnread = 0, needSave = false;
     for (let room of myRooms) {
         try {
             const url = `${SB_URL}/rest/v1/talk_messages?select=id,data,iv,created_at,sender_data,sender_iv&room_id=eq.${room.roomId}&order=id.desc&limit=20`;
             const r = await fetch(url, {headers:H});
             const msgs = await r.json();
             if (!Array.isArray(msgs) || !msgs.length) continue;
-
             const roomKey = await deriveKey('talk::'+room.roomKey);
             const senderKey = await deriveKey('sender::'+room.roomKey);
-            
-            let latestDecryptedMsg = null;
-            let latestMsgTime = null;
-            let otherAv = null;
-
+            let latestDecryptedMsg = null, latestMsgTime = null, otherAv = null;
             for(let m of msgs) {
                 const text = await aesDecrypt(roomKey, m.data, m.iv);
-                if(text !== null) {
-                    if(!latestDecryptedMsg) {
-                        latestDecryptedMsg = text;
-                        latestMsgTime = new Date(m.created_at).getTime();
-                    }
-                }
-                // 尝试提取对方头像（非自己）
+                if(text !== null && !latestDecryptedMsg) { latestDecryptedMsg = text; latestMsgTime = new Date(m.created_at).getTime(); }
                 if (!otherAv && m.sender_data && m.sender_iv) {
                     const senderJson = await aesDecrypt(senderKey, m.sender_data, m.sender_iv);
-                    if (senderJson) {
-                        try {
-                            const s = JSON.parse(senderJson);
-                            if (s.username !== currentUser.username && s.avatar) {
-                                otherAv = s.avatar;
-                            }
-                        } catch(e){}
-                    }
+                    if (senderJson) { try { const s = JSON.parse(senderJson); if (s.username !== currentUser.username && s.avatar) otherAv = s.avatar; } catch(e){} }
                 }
             }
-
             let unreadCount = 0;
             const lastRead = room.lastReadId || 0;
-            msgs.forEach(m => {
-                if (m.id > lastRead) unreadCount++;
-            });
-
+            msgs.forEach(m => { if (m.id > lastRead) unreadCount++; });
             if (room.lastMsg !== latestDecryptedMsg || room.unreadCount !== unreadCount || room.otherAvatar !== otherAv) {
-                room.lastMsg = latestDecryptedMsg;
-                if(latestMsgTime) room.lastTime = latestMsgTime;
-                room.otherAvatar = otherAv || room.otherAvatar; // 保留已有头像
-                room.unreadCount = (chatRoomId === room.roomId) ? 0 : unreadCount;
+                room.lastMsg = latestDecryptedMsg; if(latestMsgTime) room.lastTime = latestMsgTime;
+                room.otherAvatar = otherAv || room.otherAvatar; room.unreadCount = (chatRoomId === room.roomId) ? 0 : unreadCount;
                 needSave = true;
             }
             totalUnread += room.unreadCount || 0;
-        } catch(e) {
-            console.error('后台同步单房间错误', e);
-        }
+        } catch(e) {}
     }
-
-    if (needSave) {
-        saveMyRooms();
-        if(document.getElementById('beehivePage').classList.contains('active')) {
-            renderChatList();
-        }
-    }
+    if (needSave) { saveMyRooms(); if(document.getElementById('beehivePage').classList.contains('active')) renderChatList(); }
     updateMainPageUnreadUI(totalUnread);
 }
-
 function updateMainPageUnreadUI(count) {
     const banner = document.getElementById('mainUnreadBanner');
     const badgeCount = document.getElementById('mainUnreadCount');
-    if (count > 0) {
-        badgeCount.textContent = count;
-        banner.style.display = 'block';
-    } else {
-        banner.style.display = 'none';
-    }
+    if (count > 0) { badgeCount.textContent = count; banner.style.display = 'block'; } else banner.style.display = 'none';
 }
 
-// ============================================================
-// 加入 / 创建 房间
-// ============================================================
 function switchTab(tab) {
     document.getElementById('tabJoin').classList.toggle('active', tab==='join');
     document.getElementById('tabCreate').classList.toggle('active', tab==='create');
     document.getElementById('joinPanel').style.display = tab==='join'?'':'none';
     document.getElementById('createPanel').style.display = tab==='create'?'':'none';
 }
-
 async function doJoinRoom() {
     const rKey=document.getElementById('joinRoomKey').value.trim();
     const rName=document.getElementById('joinRoomName').value.trim();
     const err=document.getElementById('addRoomErr');
     if(!rKey||!rName){err.textContent='请填写暗号和聊天名称';return;}
-    const roomId=await sha256hex('room::'+rKey);
-    const short=roomId.substring(0,20);
+    const roomId=await sha256hex('room::'+rKey); const short=roomId.substring(0,20);
     if(myRooms.find(r=>r.roomId===short)){err.textContent='你已加入该聊天';return;}
     myRooms.push({roomId:short, roomName:rName, roomKey:rKey, lastTime:Date.now(), lastMsg:'', lastReadId:0, unreadCount:0, otherAvatar:null});
-    saveMyRooms();
-    document.getElementById('joinRoomKey').value='';
-    document.getElementById('joinRoomName').value='';
-    err.textContent='';
-    renderChatList();
-    showPage('beehivePage');
-    backgroundSync();
+    saveMyRooms(); document.getElementById('joinRoomKey').value=''; document.getElementById('joinRoomName').value=''; err.textContent='';
+    renderChatList(); showPage('beehivePage'); backgroundSync();
 }
-
 async function doCreateRoom() {
     const rKey=document.getElementById('createRoomKey').value.trim();
     const rName=document.getElementById('createRoomName').value.trim();
     const err=document.getElementById('addRoomErr');
     if(!rKey||!rName){err.textContent='请填写暗号和聊天名称';return;}
-    const roomId=await sha256hex('room::'+rKey);
-    const short=roomId.substring(0,20);
+    const roomId=await sha256hex('room::'+rKey); const short=roomId.substring(0,20);
     if(myRooms.find(r=>r.roomId===short)){err.textContent='你已创建或加入该聊天';return;}
     myRooms.push({roomId:short, roomName:rName, roomKey:rKey, lastTime:Date.now(), lastMsg:'', lastReadId:0, unreadCount:0, otherAvatar:null});
-    saveMyRooms();
-    document.getElementById('createRoomKey').value='';
-    document.getElementById('createRoomName').value='';
-    err.textContent='';
-    renderChatList();
-    showPage('beehivePage');
-    backgroundSync();
+    saveMyRooms(); document.getElementById('createRoomKey').value=''; document.getElementById('createRoomName').value=''; err.textContent='';
+    renderChatList(); showPage('beehivePage'); backgroundSync();
 }
 
 // ============================================================
 // 聊天界面
 // ============================================================
 let chatRoomId='', chatKey=null, chatPoll=null, chatLastId=0, chatRoomKeyStr='';
-
 async function openChat(roomId) {
-    const room = myRooms.find(r=>r.roomId===roomId);
-    if(!room) return;
-    chatRoomId = roomId;
-    chatRoomKeyStr = room.roomKey;
-    chatKey = await deriveKey('talk::'+room.roomKey);
-    chatLastId = 0;
+    const room = myRooms.find(r=>r.roomId===roomId); if(!room) return;
+    chatRoomId = roomId; chatRoomKeyStr = room.roomKey; chatKey = await deriveKey('talk::'+room.roomKey); chatLastId = 0;
     document.getElementById('chatRoomName').textContent = room.roomName;
     document.getElementById('chatRoomIcon').textContent = room.otherAvatar || '🍯';
-    document.getElementById('chatMessages').innerHTML =
-        `<div class="chat-empty"><div class="big">🐝</div><div>蜂箱已开启，消息均已加密</div></div>`;
-    showPage('chatPage');
-    
-    await loadChatMessages(true);
+    document.getElementById('chatMessages').innerHTML = `<div class="chat-empty"><div class="big">🐝</div><div>蜂箱已开启，消息均已加密</div></div>`;
+    showPage('chatPage'); await loadChatMessages(true);
     chatPoll = setInterval(()=>loadChatMessages(false), 3000);
 }
-
 function leaveChat() {
     if(chatPoll){clearInterval(chatPoll);chatPoll=null;}
-    
     const room=myRooms.find(r=>r.roomId===chatRoomId);
-    if(room){
-        room.lastReadId = chatLastId;
-        room.unreadCount = 0;
-        // 注意：lastTime 由 backgroundSync 根据最新消息时间戳更新，这里不覆盖
-        saveMyRooms();
-    }
-    
-    chatKey=null; chatRoomId=''; chatLastId=0;
-    renderChatList();
-    showPage('beehivePage');
-    backgroundSync(); 
+    if(room){ room.lastReadId = chatLastId; room.unreadCount = 0; saveMyRooms(); }
+    chatKey=null; chatRoomId=''; chatLastId=0; renderChatList(); showPage('beehivePage'); backgroundSync(); 
 }
-
 async function loadChatMessages(isFirst) {
     if(!chatKey||!chatRoomId) return;
     try {
         let url=`${SB_URL}/rest/v1/talk_messages?select=*&room_id=eq.${chatRoomId}&order=id.asc`;
         if(!isFirst && chatLastId>0) url+=`&id=gt.${chatLastId}`;
-        const r=await fetch(url,{headers:H});
-        const msgs=await r.json();
+        const r=await fetch(url,{headers:H}); const msgs=await r.json();
         if(!Array.isArray(msgs)||!msgs.length) return;
-
-        const container=document.getElementById('chatMessages');
-        if(isFirst) container.innerHTML='';
-
+        const container=document.getElementById('chatMessages'); if(isFirst) container.innerHTML='';
         for(const msg of msgs){
-            if(container.querySelector(`[data-msg-id="${msg.id}"]`)) {
-                chatLastId = Math.max(chatLastId, msg.id);
-                continue;
-            }
-
-            const text=await aesDecrypt(chatKey, msg.data, msg.iv);
-            if(text===null) continue;
-            
-            const senderKey=await deriveKey('sender::'+chatRoomKeyStr);
-            const senderJson=await aesDecrypt(senderKey, msg.sender_data, msg.sender_iv);
+            if(container.querySelector(`[data-msg-id="${msg.id}"]`)) { chatLastId = Math.max(chatLastId, msg.id); continue; }
+            const text=await aesDecrypt(chatKey, msg.data, msg.iv); if(text===null) continue;
+            const senderKey=await deriveKey('sender::'+chatRoomKeyStr); const senderJson=await aesDecrypt(senderKey, msg.sender_data, msg.sender_iv);
             let nick='对方', av='🕊️', isMine=false;
-            if(senderJson){
-                try {
-                    const s=JSON.parse(senderJson);
-                    nick=s.nickname; av=s.avatar;
-                    isMine=(s.username===currentUser.username);
-                } catch {}
-            }
+            if(senderJson){ try { const s=JSON.parse(senderJson); nick=s.nickname; av=s.avatar; isMine=(s.username===currentUser.username); } catch {} }
             const time=new Date(msg.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-            const row=document.createElement('div');
-            row.className=`msg-row${isMine?' mine':''}`;
-            row.setAttribute('data-msg-id', msg.id);
-            row.innerHTML=`
-                <div class="msg-av${isMine?' mine-av':''}">${av}</div>
+            const row=document.createElement('div'); row.className=`msg-row${isMine?' mine':''}`; row.setAttribute('data-msg-id', msg.id);
+            row.innerHTML=`<div class="msg-av${isMine?' mine-av':''}">${av}</div>
                 <div class="msg-col">
                     ${!isMine?`<div class="msg-nick">${escHtml(nick)}</div>`:''}
                     <div class="msg-bubble${isMine?' mine':' theirs'}">${escHtml(text)}</div>
                     <div class="msg-time">${time}</div>
                 </div>`;
-            container.appendChild(row);
-            chatLastId=Math.max(chatLastId, msg.id);
+            container.appendChild(row); chatLastId=Math.max(chatLastId, msg.id);
         }
         container.scrollTop=container.scrollHeight;
-
-        const room=myRooms.find(r=>r.roomId===chatRoomId);
-        if(room && chatLastId > (room.lastReadId || 0)) {
-            room.lastReadId = chatLastId;
-            room.unreadCount = 0;
-            saveMyRooms();
-        }
-    } catch(e){console.error('加载消息失败',e);}
+        const room=myRooms.find(r=>r.roomId===chatRoomId); if(room && chatLastId > (room.lastReadId || 0)) { room.lastReadId = chatLastId; room.unreadCount = 0; saveMyRooms(); }
+    } catch(e){}
 }
-
 async function sendChatMessage() {
-    if (!rateLimit('sendMsg', 10, 10000)) return; // 10秒内最多10条
-    const input=document.getElementById('chatInput');
-    const text=input.value.trim();
-    if(!text||!chatKey) return;
+    if (!rateLimit('sendMsg', 10, 10000)) return;
+    const input=document.getElementById('chatInput'); const text=input.value.trim(); if(!text||!chatKey) return;
     if(text.length > 2000) { alert('消息不能超过2000字'); return; }
-    const btn=document.getElementById('chatSendBtn');
-    btn.disabled=true; input.value='';
+    const btn=document.getElementById('chatSendBtn'); btn.disabled=true; input.value='';
     try {
-        const {data,iv}=await aesEncrypt(chatKey, text);
-        const senderKey=await deriveKey('sender::'+chatRoomKeyStr);
+        const {data,iv}=await aesEncrypt(chatKey, text); const senderKey=await deriveKey('sender::'+chatRoomKeyStr);
         const senderJson=JSON.stringify({username:currentUser.username, nickname:currentUser.nickname, avatar:currentUser.avatar});
         const {data:sd, iv:siv}=await aesEncrypt(senderKey, senderJson);
-        
-        await fetch(`${SB_URL}/rest/v1/talk_messages`,{
-            method:'POST', headers:{...H,'Prefer':'return=minimal'},
-            body:JSON.stringify({room_id:chatRoomId, sender_data:sd, sender_iv:siv, data, iv})
-        });
-        
+        await fetch(`${SB_URL}/rest/v1/talk_messages`,{method:'POST', headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({room_id:chatRoomId, sender_data:sd, sender_iv:siv, data, iv})});
         setTimeout(() => { loadChatMessages(false); }, 120);
-    } catch(e){console.error('发送失败',e);}
-    finally{btn.disabled=false; input.focus();}
+    } catch(e){} finally{btn.disabled=false; input.focus();}
+}
+function handleChatKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();} }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+
+// ============================================================
+// 醉花阴：Apple Watch 3D 墓碑式卡片交互机制
+// ============================================================
+let zhCards=[], zhCurrent=null, zhTimer=null, zhDeck=false, zhStartX=null;
+
+function openZuihuayin(){
+    showPage('zuihuayinPage'); 
+    loadZhCards(); 
+    if(zhTimer) clearInterval(zhTimer); 
+    zhTimer=setInterval(saveZhCard,15000); 
+    initZhGestures();
 }
 
-function handleChatKey(e) {
-    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}
+function closeZuihuayin(){
+    saveZhCard(); 
+    if(zhTimer) clearInterval(zhTimer); 
+    if(zhDeck) toggleHistoryDeck(false);
+    showPage('mainPage');
 }
 
-function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+async function loadZhCards(){ 
+    try { 
+        const r=await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?select=*&order=id.desc`,{headers:H}); 
+        zhCards=await r.json(); 
+        if(!Array.isArray(zhCards)) zhCards=[]; 
+        if(!zhCards.length){ await createZhCard(); return; } 
+        zhCurrent=zhCards[0]; 
+        renderZh(); 
+    } catch(e){ console.log(e); } 
+}
+
+function renderZh(){ 
+    const ta=document.getElementById('zhTextarea'); 
+    ta.value=zhCurrent?.content||''; 
+    
+    const prev=document.getElementById('previousCard'); 
+    // 找出当前大卡片在全局数组中的索引
+    const currentIndex = zhCards.findIndex(c => c.id === zhCurrent.id);
+    
+    // “上一张卡片位置” 放置该卡片物理上的下一条（也就是时间上的上一张卡片）
+    if(currentIndex !== -1 && zhCards[currentIndex + 1]){ 
+        prev.style.display='block'; 
+        prev.innerHTML='<div style="font-size:.95rem;color:#7a6857;line-height:1.75;white-space:pre-wrap;pointer-events:none;">'+escHtml((zhCards[currentIndex + 1].content||'空白').slice(0,120))+'</div>'; 
+    } else {
+        prev.style.display='none'; 
+    }
+    renderCatalog(); 
+}
+
+async function saveZhCard(){ 
+    if(!zhCurrent)return; 
+    const content=document.getElementById('zhTextarea').value; 
+    zhCurrent.content=content; 
+    await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?id=eq.${zhCurrent.id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({content,updated_at:new Date().toISOString()})}); 
+
+}
+
+async function createZhCard(){ 
+    const r=await fetch(`${SB_URL}/rest/v1/zuihuayin_cards`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify({content:''})}); 
+    const j=await r.json(); 
+    zhCurrent=j[0]; 
+    loadZhCards(); 
+}
+
+// 核心控制器：控制 3D 景深流界面开启和高频空间解算
+function toggleHistoryDeck(forceState){
+if(typeof forceState==='boolean') zhDeck=forceState; else zhDeck=!zhDeck;
+const deck=document.getElementById('historyDeck');
+const cur=document.getElementById('currentCard');
+const prev=document.getElementById('previousCard');
+const ta=document.getElementById('zhTextarea');
+const addBtn=document.getElementById('zhAddBtn');
+if(zhDeck){
+saveZhCard(); if(ta){ta.blur();ta.disabled=true;}
+if(addBtn) addBtn.style.display='none';
+deck.style.display='block'; deck.innerHTML=''; zhFocusLock=-1;
+cur.style.opacity='0';cur.style.pointerEvents='none'; if(prev) prev.style.opacity='0';
+const stackCards=zhCards.slice().reverse();
+stackCards.forEach((c,i)=>{
+const d=document.createElement('div'); d.className='deck-card';
+d.style.zIndex=stackCards.length-i;
+d.innerHTML=`<div style="white-space:pre-wrap;font-size:.95rem;line-height:1.75;height:100%;overflow:hidden;color:#5a4a3d;">${escHtml((c.content||'空白'))}</div>`;
+d.onclick=(e)=>{e.stopPropagation();openZhById(c.id);}; deck.appendChild(d);
+});
+// 定位 scrollTop 使焦点卡居于 45% 处
+requestAnimationFrame(()=>{
+const idx=stackCards.findIndex(c=>c.id===zhCurrent.id);
+const cards=[...deck.querySelectorAll('.deck-card')];
+const target=cards[idx>=0?idx:0];
+if(target){
+  // 卡片中心对齐屏幕 45%
+  const cardCenterInDeck = target.offsetTop + target.offsetHeight/2;
+  deck.scrollTop = cardCenterInDeck - window.innerHeight*0.45;
+}
+updateDeckDepth();
+});
+deck.onscroll=updateDeckDepth;
+deck.onclick=(e)=>{ if(e.target===deck){ toggleHistoryDeck(false); } };
+}else{
+deck.style.transition='opacity .22s';
+deck.style.opacity='0';
+setTimeout(()=>{deck.style.display='none';deck.style.opacity='1';deck.style.transition='';deck.innerHTML='';},230);
+if(addBtn) addBtn.style.display='';
+if(ta) ta.disabled=false; cur.style.opacity='1';cur.style.pointerEvents='auto'; if(prev) prev.style.opacity='1';
+}
+}
+
+let zhFocusLock=-1, zhRAF=null;
+function updateDeckDepth(){
+ const deck=document.getElementById('historyDeck');
+ if(zhRAF) cancelAnimationFrame(zhRAF);
+ zhRAF=requestAnimationFrame(()=>{
+ const cards=[...deck.querySelectorAll('.deck-card')];
+ if(!cards.length) return;
+ const center=window.innerHeight*0.45;
+ // 找离基准点最近的卡
+ let nearest=-1, min=1e9;
+ cards.forEach((card,i)=>{
+   const r=card.getBoundingClientRect();
+   const d=Math.abs(r.top + r.height/2 - center);
+   if(d<min){min=d;nearest=i;}
+ });
+ // 切换焦点：最近卡进入 80px 内才切，避免抖动
+ if(zhFocusLock<0) zhFocusLock=nearest;
+ else if(nearest!==zhFocusLock && min<80) zhFocusLock=nearest;
+ const focus=zhFocusLock;
+ cards.forEach((card,i)=>{
+   const r=card.getBoundingClientRect();
+   const dist=Math.abs(r.top+r.height/2-center);
+   // ratio: 0=完全在焦点位置, 1=完全离开
+   const ratio=Math.min(dist/(window.innerHeight*0.55),1);
+   if(i===focus){
+     const liftY=-16*(1-ratio);
+     const sc=1+0.025*(1-ratio);
+     card.style.transform=`translateY(${liftY}px) scale(${sc})`;
+     card.style.boxShadow=`0 ${18+14*(1-ratio)}px ${48+28*(1-ratio)}px rgba(73,54,34,${0.10+0.18*(1-ratio)})`;
+     card.style.filter=`brightness(${1+0.02*(1-ratio)})`;
+     card.style.zIndex=9999;
+   } else {
+     const away=Math.min(Math.abs(i-focus),3);
+     const sc=0.975-0.008*(away-1);
+     card.style.transform=`translateY(0) scale(${sc})`;
+     card.style.boxShadow=`0 8px 22px rgba(73,54,34,0.09)`;
+     card.style.filter=`brightness(${0.93+0.03*(1-ratio)})`;
+     card.style.zIndex=cards.length-away;
+   }
+ });
+ });
+}
+
+function openZhById(id){
+    const c=zhCards.find(x=>x.id===id);
+    if(c){
+        zhCurrent=c;
+        renderZh();
+        toggleHistoryDeck(false);
+        document.body.classList.remove('body-catalog');
+    }
+}
+
+function renderCatalog(){ 
+    const p=document.getElementById('catalogPanel'); 
+    p.innerHTML=zhCards.map(c=>{ 
+        const t=(c.created_at||new Date().toISOString()); 
+        const preview=escHtml((c.content||'').slice(0,32)); 
+        return `<div class="catalog-item" onclick="openZhById(${c.id})"><div class="catalog-thumb" style="display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#7a6857;padding:6px;text-align:center;overflow:hidden">${preview||'空白'}</div><div>${new Date(t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div></div>`
+    }).join(''); 
+}
+
+let zhStartY=null;
+function initZhGestures(){ 
+    const stage=document.getElementById('zhStage'); 
+    stage.ontouchstart=e=>{ 
+        zhStartX=e.touches[0].clientX; 
+        zhStartY=e.touches[0].clientY; 
+    }; 
+    stage.ontouchmove=e=>{ 
+        if(zhStartX === null || zhStartY === null) return;
+        const dx=e.touches[0].clientX-zhStartX; 
+        const dy=e.touches[0].clientY-zhStartY; 
+        // 严格判定：水平滑动距离超过140px，且垂直方向偏移小于45px，才判定为呼出目录，极大防止上下滚动时误触
+        if(dx>140 && Math.abs(dy)<45) {
+            document.body.classList.add('body-catalog'); 
+            zhStartX = null; zhStartY = null; // 触发后重置，避免重复触发
+        }
+    }; 
+    stage.ontouchend=()=>{ zhStartX = null; zhStartY = null; };
+    stage.onclick=e=>{ if(document.body.classList.contains('body-catalog') && e.target.id==='zhStage'){ document.body.classList.remove('body-catalog'); } }; 
+}
+
+async function addNewZhCard(){ 
+    await saveZhCard(); 
+    const cur=document.getElementById('currentCard'); 
+    cur.classList.remove('card-slide-in'); 
+    void cur.offsetWidth; 
+    await createZhCard(); 
+    setTimeout(()=>{cur.classList.add('card-slide-in');},80); 
 }
 
 // ============================================================
 // 初始化应用
 // ============================================================
 loadUserFromStorage();
-buildAvatarPicker();
 fetchCloudMessages();
 setInterval(fetchCloudMessages, 10000);
-
-if (currentUser) {
-    startBackgroundSync();
-}
+if (currentUser) startBackgroundSync();
 </script>
 </body>
 </html>
