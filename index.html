@@ -25,6 +25,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 /* ===== PAGE SYSTEM ===== */
 .page { display: none; min-height: 100vh; }
 .page.active { display: flex; flex-direction: column; }
+#zuihuayinPage.active { display: block; }
 #mainPage.active { display: block; }
 
 /* ===== MAIN PAGE ===== */
@@ -203,7 +204,8 @@ textarea { resize: vertical; height: 90px; }
     box-shadow:0 25px 55px rgba(73,54,34,.22),0 4px 12px rgba(0,0,0,.08);padding:28px;
     border:1px solid rgba(130,110,80,.08);transition:.55s cubic-bezier(.2,.8,.2,1);
 }
-#currentCard{top:18vh;height:64vh;z-index:12;transform:translateX(-50%);}
+#currentCard{top:18vh;height:64vh;z-index:12;transform:translateX(-50%) translateY(-8px) scale(1.012);
+box-shadow:0 32px 70px rgba(73,54,34,.28),0 4px 12px rgba(0,0,0,.08);}
 /* 上一张卡片位置：垂直位置在当前张上方，但层叠在大卡片的下方（z-index:9），且漏出较多一点方便点击 */
 #previousCard{
     top:6vh;height:64vh;z-index:9;
@@ -212,6 +214,7 @@ textarea { resize: vertical; height: 90px; }
     box-shadow:0 12px 35px rgba(73,54,34,.16);
 }
 .zh-card textarea{width:100%;height:100%;border:none;background:transparent;resize:none;outline:none;font-size:1rem;line-height:1.8;color:#5a4a3d;font-family:Georgia,serif;}
+#zhBackBtn{position:absolute;top:18px;left:18px;width:42px;height:42px;border:none;border-radius:50%;background:rgba(248,244,236,.88);box-shadow:0 4px 14px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#6f5b4a;z-index:36;cursor:pointer;}
 #zhAddBtn{position:absolute;top:18px;right:18px;width:42px;height:42px;border:none;border-radius:50%;background:rgba(248,244,236,.88);box-shadow:0 4px 14px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#6f5b4a;z-index:36;cursor:pointer;}
 
 /* 极致顺滑不卡顿、完全不透明的卡片罗列界面 */
@@ -220,7 +223,7 @@ position:absolute;inset:0;z-index:20;display:none;overflow-y:auto;overflow-x:hid
 -webkit-overflow-scrolling:touch;background:#ebe4d8;
 opacity:1;perspective:1200px;
 /* padding 让首尾卡也能滚到屏幕 45% 位置 */
-padding:calc(45vh - 28vh) 0 calc(55vh);
+padding:calc(52vh - 28vh) 0 calc(48vh);
 }
 .deck-card{
 position:relative;margin:0 auto;width:min(72vw,480px);height:56vh;
@@ -246,6 +249,39 @@ opacity:0;pointer-events:none;transition:.35s;z-index:24;
 .card-slide-in{animation:cardUp .55s cubic-bezier(.2,.8,.2,1);}
 @keyframes cardUp{from{transform:translateX(-50%) translateY(120px);opacity:.4}to{transform:translateX(-50%) translateY(0);opacity:1}}
 #saveHint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(60,60,60,.68);color:white;padding:6px 12px;border-radius:14px;font-size:.8rem;opacity:0;transition:.3s;z-index:40;}
+
+/* 目录行备注区 */
+.catalog-meta{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.catalog-meta-time{font-size:.78rem;color:#8a7868;}
+.catalog-meta-note{font-size:.82rem;color:#5a4a3d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.catalog-meta-note-input{font-size:.82rem;color:#5a4a3d;width:100%;border:none;background:rgba(248,244,236,.9);
+border-radius:8px;padding:4px 8px;outline:none;font-family:Georgia,serif;}
+
+/* 翻页卡片左滑删除 */
+.deck-card { overflow:hidden; }
+.deck-card-inner{white-space:pre-wrap;font-size:.95rem;line-height:1.75;height:100%;overflow:hidden;color:#5a4a3d;
+  transition:transform .22s cubic-bezier(.2,.8,.2,1);}
+.deck-del-btn{position:absolute;right:0;top:0;height:100%;width:72px;background:#e05a5a;color:white;
+  border:none;font-size:.88rem;font-weight:600;cursor:pointer;border-radius:0 26px 26px 0;
+  display:flex;align-items:center;justify-content:center;
+  transform:translateX(100%);transition:transform .22s cubic-bezier(.2,.8,.2,1);z-index:2;}
+.deck-card.swiped .deck-card-inner{ transform:translateX(-72px); }
+.deck-card.swiped .deck-del-btn{ transform:translateX(0); }
+
+/* ===== 醉花阴登录页 ===== */
+#zhAuthPage { background:linear-gradient(160deg,#3a2e22,#2a2016); align-items:center; justify-content:center; padding:30px 20px; }
+#zhAuthPage.active { display:flex; }
+.zh-auth-wrap { width:100%; max-width:400px; }
+.zh-auth-box { background:rgba(248,244,236,.07); border:1px solid rgba(200,180,140,.15); border-radius:20px; padding:32px 24px; }
+.zh-auth-title { color:#e8dcc8; font-size:1.3rem; font-weight:700; text-align:center; margin-bottom:6px; letter-spacing:.5px; }
+.zh-auth-sub { color:#a89880; font-size:.82rem; text-align:center; margin-bottom:24px; }
+.zh-auth-box .form-group label { color:#c8b89a; }
+.zh-auth-box input[type=text], .zh-auth-box input[type=password] {
+  background:rgba(255,255,255,.08); border:1px solid rgba(200,180,140,.25); color:#e8dcc8;
+}
+.zh-auth-box input::placeholder { color:#7a6857; }
+.btn-zh { background:linear-gradient(135deg,#8a6a4a,#6b4f35); color:#f8f4ec; border:none; border-radius:10px; padding:11px 20px; font-weight:700; cursor:pointer; font-size:.95rem; font-family:inherit; }
+.btn-outline-zh { background:transparent; border:1.5px solid rgba(200,180,140,.4); color:#c8b89a; border-radius:10px; padding:11px 20px; font-weight:700; cursor:pointer; font-size:.95rem; font-family:inherit; }
 </style>
 </head>
 <body>
@@ -480,10 +516,63 @@ opacity:0;pointer-events:none;transition:.35s;z-index:24;
 </div>
 
 
+
+<div id="zhAuthPage" class="page">
+<div class="zh-auth-wrap">
+  <div class="zh-auth-box">
+    <h2 class="zh-auth-title">请登录蜂箱</h2>
+    <p class="zh-auth-sub">醉花阴需要账号来加密并同步你的卡片</p>
+    <div id="zhLoginForm">
+      <div class="form-group">
+        <label>账号</label>
+        <input type="text" id="zhLoginUser" placeholder="输入账号" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="zhLoginPass" placeholder="输入密码" autocomplete="current-password">
+      </div>
+      <div class="auth-btns">
+        <button class="btn btn-outline-zh" onclick="zhSwitchToRegister()">注册</button>
+        <button class="btn btn-zh" onclick="zhDoLogin()">登录</button>
+      </div>
+      <div class="auth-err" id="zhLoginErr"></div>
+    </div>
+    <div id="zhRegisterForm" style="display:none">
+      <div class="form-group">
+        <label>账号</label>
+        <input type="text" id="zhRegUser" placeholder="自定义账号" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="zhRegPass" placeholder="输入密码">
+      </div>
+      <div class="form-group">
+        <label>确认密码</label>
+        <input type="password" id="zhRegPass2" placeholder="再次确认密码">
+      </div>
+      <div class="form-group">
+        <label>昵称</label>
+        <input type="text" id="zhRegNick" placeholder="你的昵称">
+      </div>
+      <div class="form-group">
+        <label>选择头像</label>
+        <div class="avatar-picker-row" id="zhAvatarPicker"></div>
+      </div>
+      <button class="btn btn-zh" onclick="zhDoRegister()" style="width:100%;margin-top:6px">注册并进入</button>
+      <div class="auth-err" id="zhRegErr"></div>
+    </div>
+    <button class="back-link" style="color:#a89880" onclick="showPage('mainPage')">
+      <i class="fa-solid fa-arrow-left"></i> 返回
+    </button>
+  </div>
+</div>
+</div>
+
 <div id="zuihuayinPage" class="page">
 <div class="wood-bg"></div>
 <div id="deckOverlay" onclick="document.body.classList.remove('body-catalog')"></div><div id="catalogPanel"></div>
 <div class="zh-stage" id="zhStage">
+<button id="zhBackBtn" onclick="closeZuihuayin()" title="返回"><i class="fa-solid fa-arrow-left"></i></button>
 <button id="zhAddBtn" onclick="addNewZhCard()">＋</button>
 <div class="zh-card" id="previousCard" onclick="toggleHistoryDeck(true)"></div>
 <div class="zh-card" id="currentCard"><textarea id="zhTextarea" placeholder="写下此刻…"></textarea></div>
@@ -697,7 +786,12 @@ function timeAgo(ts) {
 }
 
 let bgSyncTimer = null;
-function startBackgroundSync() { if(bgSyncTimer) clearInterval(bgSyncTimer); backgroundSync(); bgSyncTimer = setInterval(backgroundSync, 7000); }
+function startBackgroundSync() {
+    // 只做一次初始同步（拉未读数），不再固定频率轮询，省流量
+    // 发消息后由 sendChatMessage 主动触发 loadChatMessages
+    if(bgSyncTimer){ clearInterval(bgSyncTimer); bgSyncTimer=null; }
+    backgroundSync();
+}
 async function backgroundSync() {
     if (!currentUser) return;
     loadMyRooms();
@@ -780,7 +874,7 @@ async function openChat(roomId) {
     document.getElementById('chatRoomIcon').textContent = room.otherAvatar || '🍯';
     document.getElementById('chatMessages').innerHTML = `<div class="chat-empty"><div class="big">🐝</div><div>蜂箱已开启，消息均已加密</div></div>`;
     showPage('chatPage'); await loadChatMessages(true);
-    chatPoll = setInterval(()=>loadChatMessages(false), 3000);
+    // 不再定时轮询，发消息后主动刷新，省流量
 }
 function leaveChat() {
     if(chatPoll){clearInterval(chatPoll);chatPoll=null;}
@@ -826,12 +920,145 @@ async function sendChatMessage() {
         const senderJson=JSON.stringify({username:currentUser.username, nickname:currentUser.nickname, avatar:currentUser.avatar});
         const {data:sd, iv:siv}=await aesEncrypt(senderKey, senderJson);
         await fetch(`${SB_URL}/rest/v1/talk_messages`,{method:'POST', headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({room_id:chatRoomId, sender_data:sd, sender_iv:siv, data, iv})});
-        setTimeout(() => { loadChatMessages(false); }, 120);
+        // 发消息后主动刷新消息列表 + 更新未读数（替代定时轮询）
+        setTimeout(() => { loadChatMessages(false); backgroundSync(); }, 120);
     } catch(e){} finally{btn.disabled=false; input.focus();}
 }
 function handleChatKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();} }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+
+
+// ============================================================
+// 蜂箱账号认证（Supabase bee_users 表）
+// ============================================================
+async function doLogin(){
+    const user=document.getElementById('loginUser').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    const err=document.getElementById('loginErr');
+    if(!user||!pass){err.textContent='请填写账号和密码';return;}
+    err.textContent='';
+    try {
+        const pwHash=await sha256hex(user+'::pw::'+pass);
+        const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=*&username=eq.${encodeURIComponent(user)}&pw_hash=eq.${pwHash}`,{headers:H});
+        const data=await r.json();
+        if(!Array.isArray(data)||!data.length){err.textContent='账号或密码错误';return;}
+        const u=data[0];
+        saveUserToStorage({username:u.username,nickname:u.nickname,avatar:u.avatar,pwHash});
+        enterBeehive();
+    } catch(e){ err.textContent='网络异常，请重试'; }
+}
+async function doRegisterStep1(){
+    const user=sanitize(document.getElementById('regUser').value.trim());
+    const pass=document.getElementById('regPass').value;
+    const pass2=document.getElementById('regPass2').value;
+    const err=document.getElementById('regErr');
+    if(!user||!pass||!pass2){err.textContent='请完整填写所有字段';return;}
+    if(pass!==pass2){err.textContent='两次密码不一致';return;}
+    if(user.length<3){err.textContent='账号至少3位';return;}
+    if(pass.length<6){err.textContent='密码至少6位';return;}
+    const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=username&username=eq.${encodeURIComponent(user)}`,{headers:H});
+    const data=await r.json();
+    if(Array.isArray(data)&&data.length){err.textContent='账号已被注册';return;}
+    err.textContent='';
+    document.getElementById('registerStep1').style.display='none';
+    document.getElementById('registerStep2').style.display='';
+    // init avatar picker
+    const picker=document.getElementById('avatarPicker');
+    picker.innerHTML=AVATARS.map((a,i)=>`<div class="avatar-opt${i===0?' selected':''}" onclick="selectAvatar(this,'${a}')">${a}</div>`).join('');
+    window._regTmpUser=user; window._regTmpPass=pass;
+}
+let _selectedAvatar=AVATARS[0];
+function selectAvatar(el,av){
+    document.querySelectorAll('#avatarPicker .avatar-opt').forEach(e=>e.classList.remove('selected'));
+    el.classList.add('selected'); _selectedAvatar=av;
+}
+async function doRegisterStep2(){
+    const nick=sanitize(document.getElementById('regNick').value.trim());
+    const err=document.getElementById('regErr2');
+    if(!nick){err.textContent='请填写昵称';return;}
+    const user=window._regTmpUser; const pass=window._regTmpPass;
+    if(!user||!pass){err.textContent='注册信息丢失，请重新填写';return;}
+    const pwHash=await sha256hex(user+'::pw::'+pass);
+    try {
+        const r=await fetch(`${SB_URL}/rest/v1/bee_users`,{method:'POST',headers:{...H,'Prefer':'return=representation'},
+            body:JSON.stringify({username:user,pw_hash:pwHash,nickname:nick,avatar:_selectedAvatar})});
+        const data=await r.json();
+        if(!Array.isArray(data)||!data.length) throw new Error();
+        saveUserToStorage({username:user,nickname:nick,avatar:_selectedAvatar,pwHash});
+        enterBeehive();
+    } catch(e){ err.textContent='注册失败，账号可能已存在'; }
+}
+function switchToRegister(){
+    document.getElementById('loginForm').style.display='none';
+    document.getElementById('registerForm').style.display='';
+    document.getElementById('authSubtitle').textContent='创建你的蜂箱账号';
+}
+
+
+// ── 醉花阴独立登录（与蜂箱共用同一账号体系）──────────────────────
+let zhEncKey = null; // 派生的加密密钥，登录后设置
+
+async function zhDoLogin(){
+    const user=document.getElementById('zhLoginUser').value.trim();
+    const pass=document.getElementById('zhLoginPass').value;
+    const err=document.getElementById('zhLoginErr');
+    if(!user||!pass){err.textContent='请填写账号和密码';return;}
+    err.textContent='验证中…';
+    try {
+        const pwHash=await sha256hex(user+'::pw::'+pass);
+        const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=*&username=eq.${encodeURIComponent(user)}&pw_hash=eq.${pwHash}`,{headers:H});
+        const data=await r.json();
+        if(!Array.isArray(data)||!data.length){err.textContent='账号或密码错误';return;}
+        const u=data[0];
+        saveUserToStorage({username:u.username,nickname:u.nickname,avatar:u.avatar,pwHash});
+        await enterZuihuayin();
+    } catch(e){ err.textContent='网络异常，请重试'; }
+}
+function zhSwitchToRegister(){
+    document.getElementById('zhLoginForm').style.display='none';
+    document.getElementById('zhRegisterForm').style.display='';
+    const picker=document.getElementById('zhAvatarPicker');
+    picker.innerHTML=AVATARS.map((a,i)=>`<div class="avatar-opt${i===0?' selected':''}" onclick="zhSelectAvatar(this,'${a}')">${a}</div>`).join('');
+}
+let _zhRegAvatar=AVATARS[0];
+function zhSelectAvatar(el,av){
+    document.querySelectorAll('#zhAvatarPicker .avatar-opt').forEach(e=>e.classList.remove('selected'));
+    el.classList.add('selected'); _zhRegAvatar=av;
+}
+async function zhDoRegister(){
+    const user=sanitize(document.getElementById('zhRegUser').value.trim());
+    const pass=document.getElementById('zhRegPass').value;
+    const pass2=document.getElementById('zhRegPass2').value;
+    const nick=sanitize(document.getElementById('zhRegNick').value.trim());
+    const err=document.getElementById('zhRegErr');
+    if(!user||!pass||!pass2||!nick){err.textContent='请完整填写所有字段';return;}
+    if(pass!==pass2){err.textContent='两次密码不一致';return;}
+    if(user.length<3){err.textContent='账号至少3位';return;}
+    if(pass.length<6){err.textContent='密码至少6位';return;}
+    const check=await fetch(`${SB_URL}/rest/v1/bee_users?select=username&username=eq.${encodeURIComponent(user)}`,{headers:H});
+    const existing=await check.json();
+    if(Array.isArray(existing)&&existing.length){err.textContent='账号已被注册';return;}
+    const pwHash=await sha256hex(user+'::pw::'+pass);
+    try {
+        const r=await fetch(`${SB_URL}/rest/v1/bee_users`,{method:'POST',headers:{...H,'Prefer':'return=representation'},
+            body:JSON.stringify({username:user,pw_hash:pwHash,nickname:nick,avatar:_zhRegAvatar})});
+        const data=await r.json();
+        if(!Array.isArray(data)||!data.length) throw new Error();
+        saveUserToStorage({username:user,nickname:nick,avatar:_zhRegAvatar,pwHash});
+        await enterZuihuayin();
+    } catch(e){ err.textContent='注册失败，账号可能已存在'; }
+}
+
+async function enterZuihuayin(){
+    // 派生加密密钥：username + pwHash，纯客户端，服务器不知道内容
+    zhEncKey = await deriveKey(currentUser.username + '::zh::' + currentUser.pwHash);
+    showPage('zuihuayinPage');
+    loadZhCards();
+    if(zhTimer) clearInterval(zhTimer);
+    zhTimer=setInterval(saveZhCard,15000);
+    initZhGestures();
+}
 
 // ============================================================
 // 醉花阴：Apple Watch 3D 墓碑式卡片交互机制
@@ -839,11 +1066,23 @@ function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'
 let zhCards=[], zhCurrent=null, zhTimer=null, zhDeck=false, zhStartX=null;
 
 function openZuihuayin(){
-    showPage('zuihuayinPage'); 
-    loadZhCards(); 
-    if(zhTimer) clearInterval(zhTimer); 
-    zhTimer=setInterval(saveZhCard,15000); 
-    initZhGestures();
+    if(currentUser){
+        // 已登录蜂箱，直接进入（如密钥未派生则重新派生）
+        if(!zhEncKey){ deriveKey(currentUser.username+'::zh::'+currentUser.pwHash).then(k=>{ zhEncKey=k; }); }
+        showPage('zuihuayinPage');
+        loadZhCards();
+        if(zhTimer) clearInterval(zhTimer);
+        zhTimer=setInterval(saveZhCard,15000);
+        initZhGestures();
+    } else {
+        // 未登录：跳到醉花阴登录页
+        document.getElementById('zhLoginErr').textContent='';
+        document.getElementById('zhLoginUser').value='';
+        document.getElementById('zhLoginPass').value='';
+        document.getElementById('zhLoginForm').style.display='';
+        document.getElementById('zhRegisterForm').style.display='none';
+        showPage('zhAuthPage');
+    }
 }
 
 function closeZuihuayin(){
@@ -855,9 +1094,15 @@ function closeZuihuayin(){
 
 async function loadZhCards(){ 
     try { 
-        const r=await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?select=*&order=id.desc`,{headers:H}); 
-        zhCards=await r.json(); 
-        if(!Array.isArray(zhCards)) zhCards=[]; 
+        const uid=await sha256hex('zhuid::'+currentUser.username); const r=await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?select=*&user_id=eq.${uid}&order=id.desc`,{headers:H}); 
+        const raw=await r.json(); 
+        if(!Array.isArray(raw)) zhCards=[];
+        else {
+            zhCards=await Promise.all(raw.map(async c=>{
+                const text = c.data && c.iv ? (await aesDecrypt(zhEncKey,c.data,c.iv)||'') : (c.content||'');
+                return {...c, content:text};
+            }));
+        }
         if(!zhCards.length){ await createZhCard(); return; } 
         zhCurrent=zhCards[0]; 
         renderZh(); 
@@ -867,33 +1112,41 @@ async function loadZhCards(){
 function renderZh(){ 
     const ta=document.getElementById('zhTextarea'); 
     ta.value=zhCurrent?.content||''; 
-    
     const prev=document.getElementById('previousCard'); 
-    // 找出当前大卡片在全局数组中的索引
     const currentIndex = zhCards.findIndex(c => c.id === zhCurrent.id);
-    
-    // “上一张卡片位置” 放置该卡片物理上的下一条（也就是时间上的上一张卡片）
-    if(currentIndex !== -1 && zhCards[currentIndex + 1]){ 
-        prev.style.display='block'; 
-        prev.innerHTML='<div style="font-size:.95rem;color:#7a6857;line-height:1.75;white-space:pre-wrap;pointer-events:none;">'+escHtml((zhCards[currentIndex + 1].content||'空白').slice(0,120))+'</div>'; 
+    if(currentIndex !== -1 && zhCards[currentIndex + 1]){
+        // 有更旧的一张：叠在上方漏出片头
+        prev.style.top='6vh'; prev.style.bottom=''; prev.style.zIndex='9';
+        prev.style.transform='translateX(-50%) scale(0.95)';
+        prev.style.display='block';
+        prev.innerHTML='<div style="font-size:.95rem;color:#7a6857;line-height:1.75;white-space:pre-wrap;pointer-events:none;">'+escHtml((zhCards[currentIndex + 1].content||'空白').slice(0,120))+'</div>';
+    } else if(currentIndex !== -1 && zhCards[currentIndex - 1]){
+        // 最早一张：把更新的那张叠在下方
+        prev.style.top='auto'; prev.style.bottom='5vh'; prev.style.zIndex='9';
+        prev.style.transform='translateX(-50%) scale(0.95)';
+        prev.style.display='block';
+        prev.innerHTML='<div style="font-size:.95rem;color:#7a6857;line-height:1.75;white-space:pre-wrap;pointer-events:none;">'+escHtml((zhCards[currentIndex - 1].content||'空白').slice(0,120))+'</div>';
     } else {
-        prev.style.display='none'; 
+        prev.style.display='none';
     }
     renderCatalog(); 
 }
 
 async function saveZhCard(){ 
-    if(!zhCurrent)return; 
-    const content=document.getElementById('zhTextarea').value; 
-    zhCurrent.content=content; 
-    await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?id=eq.${zhCurrent.id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({content,updated_at:new Date().toISOString()})}); 
-
+    if(!zhCurrent||!zhEncKey)return; 
+    const raw=document.getElementById('zhTextarea').value; 
+    zhCurrent.content=raw; 
+    const {data,iv}=await aesEncrypt(zhEncKey,raw||' ');
+    await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?id=eq.${zhCurrent.id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({data,iv,updated_at:new Date().toISOString()})}); 
 }
 
 async function createZhCard(){ 
-    const r=await fetch(`${SB_URL}/rest/v1/zuihuayin_cards`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify({content:''})}); 
+    if(!zhEncKey) return;
+    const uid=await sha256hex('zhuid::'+currentUser.username);
+    const {data,iv}=await aesEncrypt(zhEncKey,' ');
+    const r=await fetch(`${SB_URL}/rest/v1/zuihuayin_cards`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify({user_id:uid,data,iv})}); 
     const j=await r.json(); 
-    zhCurrent=j[0]; 
+    zhCurrent=j[0]; zhCurrent.content='';
     loadZhCards(); 
 }
 
@@ -905,41 +1158,115 @@ const cur=document.getElementById('currentCard');
 const prev=document.getElementById('previousCard');
 const ta=document.getElementById('zhTextarea');
 const addBtn=document.getElementById('zhAddBtn');
+const backBtn=document.getElementById('zhBackBtn');
 if(zhDeck){
 saveZhCard(); if(ta){ta.blur();ta.disabled=true;}
 if(addBtn) addBtn.style.display='none';
+if(backBtn) backBtn.style.display='none';
+// 直接隐藏编辑界面元素，无缩放动画（避免回弹闪烁）
+cur.style.opacity='0'; cur.style.pointerEvents='none';
+if(prev) prev.style.opacity='0';
+// deck 从略低处淡入上移
+deck.style.opacity='0'; deck.style.transform='translateY(18px)';
 deck.style.display='block'; deck.innerHTML=''; zhFocusLock=-1;
-cur.style.opacity='0';cur.style.pointerEvents='none'; if(prev) prev.style.opacity='0';
 const stackCards=zhCards.slice().reverse();
 stackCards.forEach((c,i)=>{
-const d=document.createElement('div'); d.className='deck-card';
-d.style.zIndex=stackCards.length-i;
-d.innerHTML=`<div style="white-space:pre-wrap;font-size:.95rem;line-height:1.75;height:100%;overflow:hidden;color:#5a4a3d;">${escHtml((c.content||'空白'))}</div>`;
-d.onclick=(e)=>{e.stopPropagation();openZhById(c.id);}; deck.appendChild(d);
+  const d=document.createElement('div'); d.className='deck-card';
+  d.dataset.cardId=c.id; d.style.zIndex=stackCards.length-i;
+  d.innerHTML=`<div class="deck-card-inner">${escHtml((c.content||'空白'))}</div><button class="deck-del-btn" onclick="deleteDeckCard(event,${c.id})">删除</button>`;
+  d.onclick=(e)=>{ if(!e.target.classList.contains('deck-del-btn')){ e.stopPropagation(); openZhById(c.id); } };
+  addDeckSwipe(d, c.id);
+  deck.appendChild(d);
 });
-// 定位 scrollTop 使焦点卡居于 45% 处
-requestAnimationFrame(()=>{
-const idx=stackCards.findIndex(c=>c.id===zhCurrent.id);
-const cards=[...deck.querySelectorAll('.deck-card')];
-const target=cards[idx>=0?idx:0];
-if(target){
-  // 卡片中心对齐屏幕 45%
-  const cardCenterInDeck = target.offsetTop + target.offsetHeight/2;
-  deck.scrollTop = cardCenterInDeck - window.innerHeight*0.45;
-}
-updateDeckDepth();
-});
-deck.onscroll=updateDeckDepth;
+requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+  const idx=stackCards.findIndex(c=>c.id===zhCurrent.id);
+  const focusIdx=idx>=0?idx:0;
+  // 入场前锁定正确焦点卡，防止 updateDeckDepth 误判
+  zhFocusLock=focusIdx;
+  const cards=[...deck.querySelectorAll('.deck-card')];
+  const target=cards[focusIdx];
+  if(target){
+    // 焦点卡顶部对齐 currentCard 的 top(18vh)，入场位置吻合无跳变
+    deck.scrollTop = target.offsetTop - window.innerHeight * 0.18;
+  }
+  deck.style.transition='opacity .30s ease, transform .30s ease';
+  deck.style.opacity='1'; deck.style.transform='translateY(0)';
+  // 入场时立刻给所有卡设好初始样式，避免 scroll 触发时突然跳变
+  cards.forEach((card,i)=>{
+    card.style.transition='none';
+    if(i===focusIdx){
+      card.style.transform='translateY(-18px) scale(1.028)';
+      card.style.boxShadow='0 32px 76px rgba(73,54,34,.29)';
+      card.style.filter='brightness(1.02)';
+      card.style.zIndex=9999;
+    } else {
+      const away=Math.min(Math.abs(i-focusIdx),3);
+      const sc=0.978-0.007*Math.max(away-1,0);
+      card.style.transform=`translateY(0) scale(${sc})`;
+      card.style.boxShadow='0 8px 22px rgba(73,54,34,0.09)';
+      card.style.filter='brightness(0.92)';
+      card.style.zIndex=cards.length-away;
+    }
+  });
+  // 入场动画结束后绑定 scroll 驱动
+  setTimeout(()=>{ deck.onscroll=updateDeckDepth; }, 320);
+}); });
 deck.onclick=(e)=>{ if(e.target===deck){ toggleHistoryDeck(false); } };
 }else{
 deck.style.transition='opacity .22s';
 deck.style.opacity='0';
 setTimeout(()=>{deck.style.display='none';deck.style.opacity='1';deck.style.transition='';deck.innerHTML='';},230);
 if(addBtn) addBtn.style.display='';
-if(ta) ta.disabled=false; cur.style.opacity='1';cur.style.pointerEvents='auto'; if(prev) prev.style.opacity='1';
+if(backBtn) backBtn.style.display='';
+if(ta) ta.disabled=false;
+// 完整清理 cur 样式，确保大卡片回到原始状态
+cur.style.opacity='1'; cur.style.transform=''; cur.style.transition=''; cur.style.pointerEvents='auto';
+if(prev){ prev.style.opacity='1'; prev.style.transform=''; }
 }
 }
 
+
+// 翻页卡片左滑删除手势
+function addDeckSwipe(el, cardId){
+  let sx=null, sy=null;
+  el.addEventListener('touchstart', e=>{
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+  },{passive:true});
+  el.addEventListener('touchmove', e=>{
+    if(sx===null) return;
+    const dx=e.touches[0].clientX-sx;
+    const dy=e.touches[0].clientY-sy;
+    if(Math.abs(dy)>Math.abs(dx)) return; // 垂直滑，忽略
+    e.stopPropagation();
+    if(dx < -40){ el.classList.add('swiped'); sx=null; }
+    else if(dx > 10){ el.classList.remove('swiped'); sx=null; }
+  },{passive:true});
+  el.addEventListener('touchend',()=>{ sx=null; sy=null; },{passive:true});
+}
+
+async function deleteDeckCard(e, cardId){
+  e.stopPropagation();
+  const card = document.querySelector(`.deck-card[data-card-id="${cardId}"]`);
+  if(!card) return;
+  // 滑出动画
+  card.style.transition='transform .28s ease, opacity .28s ease, max-height .32s ease';
+  card.style.transform='translateX(-110%)'; card.style.opacity='0';
+  card.style.maxHeight=card.offsetHeight+'px';
+  setTimeout(()=>{ card.style.maxHeight='0'; card.style.marginBottom='0'; card.style.padding='0'; },200);
+  setTimeout(async ()=>{
+    card.remove();
+    // 从数据库删除
+    await fetch(`${SB_URL}/rest/v1/zuihuayin_cards?id=eq.${cardId}`,{method:'DELETE',headers:H});
+    zhCards=zhCards.filter(c=>c.id!==cardId);
+    // 如果删的是当前编辑卡，切到第一张
+    if(zhCurrent && zhCurrent.id===cardId){
+      zhCurrent=zhCards[0]||null;
+      if(!zhCurrent){ await createZhCard(); return; }
+    }
+    zhFocusLock=-1;
+    updateDeckDepth();
+  }, 420);
+}
 let zhFocusLock=-1, zhRAF=null;
 function updateDeckDepth(){
  const deck=document.getElementById('historyDeck');
@@ -947,36 +1274,35 @@ function updateDeckDepth(){
  zhRAF=requestAnimationFrame(()=>{
  const cards=[...deck.querySelectorAll('.deck-card')];
  if(!cards.length) return;
- const center=window.innerHeight*0.45;
- // 找离基准点最近的卡
+ const center=window.innerHeight*0.52;
  let nearest=-1, min=1e9;
  cards.forEach((card,i)=>{
    const r=card.getBoundingClientRect();
-   const d=Math.abs(r.top + r.height/2 - center);
+   const d=Math.abs(r.top+r.height/2-center);
    if(d<min){min=d;nearest=i;}
  });
- // 切换焦点：最近卡进入 80px 内才切，避免抖动
  if(zhFocusLock<0) zhFocusLock=nearest;
- else if(nearest!==zhFocusLock && min<80) zhFocusLock=nearest;
+ else if(nearest!==zhFocusLock && min<70) zhFocusLock=nearest;
  const focus=zhFocusLock;
  cards.forEach((card,i)=>{
    const r=card.getBoundingClientRect();
    const dist=Math.abs(r.top+r.height/2-center);
-   // ratio: 0=完全在焦点位置, 1=完全离开
-   const ratio=Math.min(dist/(window.innerHeight*0.55),1);
+   const ratio=Math.min(dist/(window.innerHeight*0.50),1);
+   // 无 transition，完全跟随 scroll 实时变化
+   card.style.transition='none';
    if(i===focus){
-     const liftY=-16*(1-ratio);
-     const sc=1+0.025*(1-ratio);
+     const liftY=-18*(1-ratio);
+     const sc=1+0.028*(1-ratio);
      card.style.transform=`translateY(${liftY}px) scale(${sc})`;
-     card.style.boxShadow=`0 ${18+14*(1-ratio)}px ${48+28*(1-ratio)}px rgba(73,54,34,${0.10+0.18*(1-ratio)})`;
+     card.style.boxShadow=`0 ${16+16*(1-ratio)}px ${44+32*(1-ratio)}px rgba(73,54,34,${0.09+0.20*(1-ratio)})`;
      card.style.filter=`brightness(${1+0.02*(1-ratio)})`;
      card.style.zIndex=9999;
    } else {
      const away=Math.min(Math.abs(i-focus),3);
-     const sc=0.975-0.008*(away-1);
+     const sc=0.978-0.007*Math.max(away-1,0);
      card.style.transform=`translateY(0) scale(${sc})`;
-     card.style.boxShadow=`0 8px 22px rgba(73,54,34,0.09)`;
-     card.style.filter=`brightness(${0.93+0.03*(1-ratio)})`;
+     card.style.boxShadow='0 8px 22px rgba(73,54,34,0.09)';
+     card.style.filter='brightness(0.92)';
      card.style.zIndex=cards.length-away;
    }
  });
@@ -990,20 +1316,53 @@ function openZhById(id){
         renderZh();
         toggleHistoryDeck(false);
         document.body.classList.remove('body-catalog');
+        // 确保 previousCard 立刻恢复可见（toggleHistoryDeck(false) 已恢复 opacity，renderZh 重设内容）
+        const prev=document.getElementById('previousCard');
+        if(prev) { prev.style.opacity='1'; }
     }
 }
+
+// 备注存储（内存，卡片 id 为键）
+const zhNotes={};
 
 function renderCatalog(){ 
     const p=document.getElementById('catalogPanel'); 
     p.innerHTML=zhCards.map(c=>{ 
         const t=(c.created_at||new Date().toISOString()); 
-        const preview=escHtml((c.content||'').slice(0,32)); 
-        return `<div class="catalog-item" onclick="openZhById(${c.id})"><div class="catalog-thumb" style="display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#7a6857;padding:6px;text-align:center;overflow:hidden">${preview||'空白'}</div><div>${new Date(t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div></div>`
+        const preview=escHtml((c.content||'').slice(0,28));
+        const note=escHtml(zhNotes[c.id]||'');
+        const timeStr=new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+        return `<div class="catalog-item">
+          <div class="catalog-thumb" onclick="openZhById(${c.id})" style="display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#7a6857;padding:6px;text-align:center;overflow:hidden;flex-shrink:0">${preview||'空白'}</div>
+          <div class="catalog-meta" onclick="catalogEditNote(this,${c.id})">
+            <div class="catalog-meta-time">${timeStr}</div>
+            <div class="catalog-meta-note" id="cnote-${c.id}">${note||'<span style="color:#bbb;font-size:.78rem">添加备注…</span>'}</div>
+          </div>
+        </div>`;
     }).join(''); 
 }
 
-let zhStartY=null;
+function catalogEditNote(el, id){
+    // 已有 input 则忽略
+    if(el.querySelector('input')) return;
+    const noteEl=el.querySelector('.catalog-meta-note');
+    const cur=zhNotes[id]||'';
+    const inp=document.createElement('input');
+    inp.className='catalog-meta-note-input';
+    inp.value=cur; inp.placeholder='添加备注…';
+    inp.onclick=e=>e.stopPropagation();
+    inp.onblur=()=>{
+        zhNotes[id]=inp.value.trim();
+        renderCatalog();
+    };
+    inp.onkeydown=e=>{ if(e.key==='Enter'){ inp.blur(); } };
+    noteEl.replaceWith(inp);
+    setTimeout(()=>inp.focus(),30);
+}
+
+let zhStartY=null, zhGesturesInited=false;
 function initZhGestures(){ 
+    if(zhGesturesInited) return; zhGesturesInited=true;
     const stage=document.getElementById('zhStage'); 
     stage.ontouchstart=e=>{ 
         zhStartX=e.touches[0].clientX; 
@@ -1012,14 +1371,23 @@ function initZhGestures(){
     stage.ontouchmove=e=>{ 
         if(zhStartX === null || zhStartY === null) return;
         const dx=e.touches[0].clientX-zhStartX; 
-        const dy=e.touches[0].clientY-zhStartY; 
-        // 严格判定：水平滑动距离超过140px，且垂直方向偏移小于45px，才判定为呼出目录，极大防止上下滚动时误触
-        if(dx>140 && Math.abs(dy)<45) {
-            document.body.classList.add('body-catalog'); 
-            zhStartX = null; zhStartY = null; // 触发后重置，避免重复触发
-        }
+        const dy=e.touches[0].clientY-zhStartY;
+        if(Math.abs(dy)>45) return;
+        // 右滑 >140px：呼出目录
+        if(dx>140){ document.body.classList.add('body-catalog'); zhStartX=null; zhStartY=null; return; }
+        // 左滑 >80px：关闭目录
+        if(dx<-80 && document.body.classList.contains('body-catalog')){ document.body.classList.remove('body-catalog'); zhStartX=null; zhStartY=null; }
     }; 
     stage.ontouchend=()=>{ zhStartX = null; zhStartY = null; };
+    // 目录面板左滑关闭
+    const cp=document.getElementById('catalogPanel');
+    let cpSX=null;
+    cp.addEventListener('touchstart',e=>{ cpSX=e.touches[0].clientX; },{passive:true});
+    cp.addEventListener('touchmove',e=>{
+        if(cpSX===null) return;
+        if(e.touches[0].clientX-cpSX < -60){ document.body.classList.remove('body-catalog'); cpSX=null; }
+    },{passive:true});
+    cp.addEventListener('touchend',()=>{ cpSX=null; },{passive:true});
     stage.onclick=e=>{ if(document.body.classList.contains('body-catalog') && e.target.id==='zhStage'){ document.body.classList.remove('body-catalog'); } }; 
 }
 
