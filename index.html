@@ -930,24 +930,36 @@ function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 
 // ============================================================
-// 蜂箱账号认证（Supabase bee_users 表）
+// 蜂箱账号认证（对齐真实 bee_users 表结构）
+// 列：username_hash, pass_hash, nickname_data, nickname_iv, avatar_data, avatar_iv
 // ============================================================
+
+// 从密码派生用于加密昵称/头像的 AES 密钥
+async function deriveUserKey(passHash){ return deriveKey('userdata::'+passHash); }
+
+// 登录：用 username_hash + pass_hash 查找，解密昵称和头像
 async function doLogin(){
     const user=document.getElementById('loginUser').value.trim();
     const pass=document.getElementById('loginPass').value;
     const err=document.getElementById('loginErr');
     if(!user||!pass){err.textContent='请填写账号和密码';return;}
-    err.textContent='';
+    err.textContent='验证中…';
     try {
-        const pwHash=await sha256hex(user+'::pw::'+pass);
-        const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=*&username=eq.${encodeURIComponent(user)}&pw_hash=eq.${pwHash}`,{headers:H});
+        const uHash=await sha256hex(user);
+        const pHash=await sha256hex(pass);
+        const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=*&username_hash=eq.${uHash}&pass_hash=eq.${pHash}`,{headers:H});
         const data=await r.json();
         if(!Array.isArray(data)||!data.length){err.textContent='账号或密码错误';return;}
         const u=data[0];
-        saveUserToStorage({username:u.username,nickname:u.nickname,avatar:u.avatar,pwHash});
+        const uKey=await deriveUserKey(pHash);
+        const nickname=await aesDecrypt(uKey,u.nickname_data,u.nickname_iv)||user;
+        const avatar=await aesDecrypt(uKey,u.avatar_data,u.avatar_iv)||'🐝';
+        const pwHash=await sha256hex(user+'::zh::'+pHash);
+        saveUserToStorage({username:user,nickname,avatar,pwHash,pHash});
         enterBeehive();
-    } catch(e){ err.textContent='网络异常，请重试'; }
+    } catch(e){ console.error(e); err.textContent='网络异常，请重试'; }
 }
+
 async function doRegisterStep1(){
     const user=sanitize(document.getElementById('regUser').value.trim());
     const pass=document.getElementById('regPass').value;
@@ -957,13 +969,13 @@ async function doRegisterStep1(){
     if(pass!==pass2){err.textContent='两次密码不一致';return;}
     if(user.length<3){err.textContent='账号至少3位';return;}
     if(pass.length<6){err.textContent='密码至少6位';return;}
-    const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=username&username=eq.${encodeURIComponent(user)}`,{headers:H});
+    const uHash=await sha256hex(user);
+    const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=username_hash&username_hash=eq.${uHash}`,{headers:H});
     const data=await r.json();
     if(Array.isArray(data)&&data.length){err.textContent='账号已被注册';return;}
     err.textContent='';
     document.getElementById('registerStep1').style.display='none';
     document.getElementById('registerStep2').style.display='';
-    // init avatar picker
     const picker=document.getElementById('avatarPicker');
     picker.innerHTML=AVATARS.map((a,i)=>`<div class="avatar-opt${i===0?' selected':''}" onclick="selectAvatar(this,'${a}')">${a}</div>`).join('');
     window._regTmpUser=user; window._regTmpPass=pass;
@@ -979,13 +991,18 @@ async function doRegisterStep2(){
     if(!nick){err.textContent='请填写昵称';return;}
     const user=window._regTmpUser; const pass=window._regTmpPass;
     if(!user||!pass){err.textContent='注册信息丢失，请重新填写';return;}
-    const pwHash=await sha256hex(user+'::pw::'+pass);
+    const uHash=await sha256hex(user);
+    const pHash=await sha256hex(pass);
+    const uKey=await deriveUserKey(pHash);
+    const {data:nd,iv:niv}=await aesEncrypt(uKey,nick);
+    const {data:ad,iv:aiv}=await aesEncrypt(uKey,_selectedAvatar);
     try {
         const r=await fetch(`${SB_URL}/rest/v1/bee_users`,{method:'POST',headers:{...H,'Prefer':'return=representation'},
-            body:JSON.stringify({username:user,pw_hash:pwHash,nickname:nick,avatar:_selectedAvatar})});
+            body:JSON.stringify({username_hash:uHash,pass_hash:pHash,nickname_data:nd,nickname_iv:niv,avatar_data:ad,avatar_iv:aiv})});
         const data=await r.json();
         if(!Array.isArray(data)||!data.length) throw new Error();
-        saveUserToStorage({username:user,nickname:nick,avatar:_selectedAvatar,pwHash});
+        const pwHash=await sha256hex(user+'::zh::'+pHash);
+        saveUserToStorage({username:user,nickname:nick,avatar:_selectedAvatar,pwHash,pHash});
         enterBeehive();
     } catch(e){ err.textContent='注册失败，账号可能已存在'; }
 }
@@ -1006,12 +1023,17 @@ async function zhDoLogin(){
     if(!user||!pass){err.textContent='请填写账号和密码';return;}
     err.textContent='验证中…';
     try {
-        const pwHash=await sha256hex(user+'::pw::'+pass);
-        const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=*&username=eq.${encodeURIComponent(user)}&pw_hash=eq.${pwHash}`,{headers:H});
+        const uHash=await sha256hex(user);
+        const pHash=await sha256hex(pass);
+        const r=await fetch(`${SB_URL}/rest/v1/bee_users?select=*&username_hash=eq.${uHash}&pass_hash=eq.${pHash}`,{headers:H});
         const data=await r.json();
         if(!Array.isArray(data)||!data.length){err.textContent='账号或密码错误';return;}
         const u=data[0];
-        saveUserToStorage({username:u.username,nickname:u.nickname,avatar:u.avatar,pwHash});
+        const uKey=await deriveUserKey(pHash);
+        const nickname=await aesDecrypt(uKey,u.nickname_data,u.nickname_iv)||user;
+        const avatar=await aesDecrypt(uKey,u.avatar_data,u.avatar_iv)||'🐝';
+        const pwHash=await sha256hex(user+'::zh::'+pHash);
+        saveUserToStorage({username:user,nickname,avatar,pwHash,pHash});
         await enterZuihuayin();
     } catch(e){ err.textContent='网络异常，请重试'; }
 }
@@ -1036,23 +1058,28 @@ async function zhDoRegister(){
     if(pass!==pass2){err.textContent='两次密码不一致';return;}
     if(user.length<3){err.textContent='账号至少3位';return;}
     if(pass.length<6){err.textContent='密码至少6位';return;}
-    const check=await fetch(`${SB_URL}/rest/v1/bee_users?select=username&username=eq.${encodeURIComponent(user)}`,{headers:H});
+    const uHash=await sha256hex(user);
+    const pHash=await sha256hex(pass);
+    const check=await fetch(`${SB_URL}/rest/v1/bee_users?select=username_hash&username_hash=eq.${uHash}`,{headers:H});
     const existing=await check.json();
     if(Array.isArray(existing)&&existing.length){err.textContent='账号已被注册';return;}
-    const pwHash=await sha256hex(user+'::pw::'+pass);
+    const uKey=await deriveUserKey(pHash);
+    const {data:nd,iv:niv}=await aesEncrypt(uKey,nick);
+    const {data:ad,iv:aiv}=await aesEncrypt(uKey,_zhRegAvatar);
     try {
         const r=await fetch(`${SB_URL}/rest/v1/bee_users`,{method:'POST',headers:{...H,'Prefer':'return=representation'},
-            body:JSON.stringify({username:user,pw_hash:pwHash,nickname:nick,avatar:_zhRegAvatar})});
+            body:JSON.stringify({username_hash:uHash,pass_hash:pHash,nickname_data:nd,nickname_iv:niv,avatar_data:ad,avatar_iv:aiv})});
         const data=await r.json();
         if(!Array.isArray(data)||!data.length) throw new Error();
-        saveUserToStorage({username:user,nickname:nick,avatar:_zhRegAvatar,pwHash});
+        const pwHash=await sha256hex(user+'::zh::'+pHash);
+        saveUserToStorage({username:user,nickname:nick,avatar:_zhRegAvatar,pwHash,pHash});
         await enterZuihuayin();
     } catch(e){ err.textContent='注册失败，账号可能已存在'; }
 }
 
 async function enterZuihuayin(){
     // 派生加密密钥：username + pwHash，纯客户端，服务器不知道内容
-    zhEncKey = await deriveKey(currentUser.username + '::zh::' + currentUser.pwHash);
+    zhEncKey = await deriveKey(currentUser.username + '::zh::' + (currentUser.pHash||currentUser.pwHash));
     showPage('zuihuayinPage');
     loadZhCards();
     if(zhTimer) clearInterval(zhTimer);
