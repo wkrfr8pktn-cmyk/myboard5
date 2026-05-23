@@ -744,13 +744,62 @@ async function doLogout() {
 // ============================================================
 let myRooms = []; 
 function roomStorageKey() { return 'bee_rooms_' + (currentUser ? currentUser.username : ''); }
+
+// 派生房间列表加密密钥（与醉花阴密钥独立）
+async function deriveRoomsKey(){
+    return deriveKey(currentUser.username + '::rooms::' + currentUser.pHash);
+}
+
+// 从 Supabase 拉取并解密房间列表，合并到本地
+async function loadMyRoomsCloud(){
+    try {
+        const uHash = await sha256hex(currentUser.username);
+        const r = await fetch(`${SB_URL}/rest/v1/bee_rooms?select=*&username_hash=eq.${uHash}`,{headers:H});
+        const rows = await r.json();
+        if(!Array.isArray(rows)||!rows.length) return;
+        const key = await deriveRoomsKey();
+        const plain = await aesDecrypt(key, rows[0].data, rows[0].iv);
+        if(!plain) return;
+        const cloudRooms = JSON.parse(plain);
+        // 合并：以 roomId 为键，云端优先，本地补充
+        const map = {};
+        myRooms.forEach(r=>{ map[r.roomId]=r; });
+        cloudRooms.forEach(r=>{ map[r.roomId]={...map[r.roomId],...r}; });
+        myRooms = Object.values(map);
+        localStorage.setItem(roomStorageKey(), JSON.stringify(myRooms));
+    } catch(e){ console.log('cloud rooms load err',e); }
+}
+
+// 加密房间列表上传到 Supabase
+async function saveMyRoomsCloud(){
+    if(!currentUser) return;
+    try {
+        const key = await deriveRoomsKey();
+        // 只上传不含缓存内容的精简版（roomId/Name/Key/lastTime/lastReadId）
+        const slim = myRooms.map(({roomId,roomName,roomKey,lastTime,lastReadId})=>({roomId,roomName,roomKey,lastTime,lastReadId}));
+        const {data,iv} = await aesEncrypt(key, JSON.stringify(slim));
+        const uHash = await sha256hex(currentUser.username);
+        await fetch(`${SB_URL}/rest/v1/bee_rooms`,{
+            method:'POST',
+            headers:{...H,'Prefer':'resolution=merge-duplicates'},
+            body:JSON.stringify({username_hash:uHash, data, iv, updated_at:new Date().toISOString()})
+        });
+    } catch(e){ console.log('cloud rooms save err',e); }
+}
+
 function loadMyRooms() {
     try { myRooms = JSON.parse(localStorage.getItem(roomStorageKey()) || '[]'); } catch { myRooms = []; }
 }
-function saveMyRooms() { if(currentUser) localStorage.setItem(roomStorageKey(), JSON.stringify(myRooms)); }
-function enterBeehive() {
+function saveMyRooms() {
+    if(!currentUser) return;
+    localStorage.setItem(roomStorageKey(), JSON.stringify(myRooms));
+    saveMyRoomsCloud(); // 同步上传云端
+}
+async function enterBeehive() {
     document.getElementById('beeMyAvatarTop').textContent = currentUser.avatar;
-    loadMyRooms(); renderChatList(); showPage('beehivePage'); startBackgroundSync();
+    loadMyRooms();
+    await loadMyRoomsCloud(); // 先从云端拉取合并
+    renderChatList(); showPage('beehivePage'); startBackgroundSync();
 }
 function renderChatList() {
     const el = document.getElementById('beeChatList');
